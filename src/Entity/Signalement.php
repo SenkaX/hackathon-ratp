@@ -9,6 +9,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SignalementRepository::class)]
+#[ORM\Table(name: 'signalement')]
+#[ORM\Index(name: 'idx_signal_stop_id', columns: ['stop_id'])]
+#[ORM\Index(name: 'idx_signal_reviewed_by', columns: ['reviewed_by_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_signal_access_token', fields: ['accessToken'])]
+#[ORM\UniqueConstraint(name: 'uniq_signal_token_hash', fields: ['tokenHash'])]
 class Signalement
 {
     #[ORM\Id]
@@ -41,11 +46,36 @@ class Signalement
     #[ORM\Column(options: ['default' => false])]
     private bool $isTest = false;
 
-    #[ORM\Column(length: 32, enumType: SignalementStatus::class, options: ['default' => 'en_cours'])]
-    private SignalementStatus $status = SignalementStatus::EnCours;
+    #[ORM\Column(length: 32, enumType: SignalementStatus::class, options: ['default' => 'en_attente_validation'])]
+    private SignalementStatus $status = SignalementStatus::EnAttenteValidation;
 
-    #[ORM\Column(length: 64, unique: true)]
+    #[ORM\Column(name: 'access_token', length: 64)]
     private ?string $accessToken = null;
+
+    #[ORM\Column(name: 'priorite_score', options: ['default' => 0])]
+    private int $prioriteScore = 0;
+
+    #[ORM\Column(name: 'confiance_score', options: ['default' => 100])]
+    private int $confianceScore = 100;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $reviewedBy = null;
+
+    #[ORM\Column(name: 'reviewed_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $reviewedAt = null;
+
+    #[ORM\Column(name: 'review_note', type: 'text', nullable: true)]
+    private ?string $reviewNote = null;
+
+    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    private ?string $tokenHash = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $tokenExpiresAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $anonymizedAt = null;
 
     public function __construct()
     {
@@ -159,9 +189,105 @@ class Signalement
         return $this->accessToken;
     }
 
-    public function setAccessToken(string $accessToken): static
+    public function setAccessToken(?string $accessToken): static
     {
         $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    public function getPrioriteScore(): int
+    {
+        return $this->prioriteScore;
+    }
+
+    public function setPrioriteScore(int $prioriteScore): static
+    {
+        $this->prioriteScore = $prioriteScore;
+
+        return $this;
+    }
+
+    public function getConfianceScore(): int
+    {
+        return $this->confianceScore;
+    }
+
+    public function setConfianceScore(int $confianceScore): static
+    {
+        $this->confianceScore = $confianceScore;
+
+        return $this;
+    }
+
+    public function getReviewedBy(): ?User
+    {
+        return $this->reviewedBy;
+    }
+
+    public function setReviewedBy(?User $reviewedBy): static
+    {
+        $this->reviewedBy = $reviewedBy;
+
+        return $this;
+    }
+
+    public function getReviewedAt(): ?\DateTimeImmutable
+    {
+        return $this->reviewedAt;
+    }
+
+    public function setReviewedAt(?\DateTimeImmutable $reviewedAt): static
+    {
+        $this->reviewedAt = $reviewedAt;
+
+        return $this;
+    }
+
+    public function getReviewNote(): ?string
+    {
+        return $this->reviewNote;
+    }
+
+    public function setReviewNote(?string $reviewNote): static
+    {
+        $this->reviewNote = $reviewNote;
+
+        return $this;
+    }
+
+    public function getTokenHash(): ?string
+    {
+        return $this->tokenHash;
+    }
+
+    public function setTokenHash(?string $tokenHash): static
+    {
+        $this->tokenHash = $tokenHash;
+
+        return $this;
+    }
+
+    public function getTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->tokenExpiresAt;
+    }
+
+    public function setTokenExpiresAt(?\DateTimeImmutable $tokenExpiresAt): static
+    {
+        $this->tokenExpiresAt = $tokenExpiresAt;
+
+        return $this;
+    }
+
+    public function getAnonymizedAt(): ?\DateTimeImmutable
+    {
+        return $this->anonymizedAt;
+    }
+
+    public function setAnonymizedAt(?\DateTimeImmutable $anonymizedAt): static
+    {
+        $this->anonymizedAt = $anonymizedAt;
 
         return $this;
     }

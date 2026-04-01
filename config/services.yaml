@@ -10,6 +10,9 @@ parameters:
     app.url: "%env(APP_URL)%"
     n8n_webhook_url: "%env(N8N_WEBHOOK_URL)%"
     n8n_webhook_secret: "%env(N8N_WEBHOOK_SECRET)%"
+    ticket_token_ttl_days: "%env(int:TICKET_TOKEN_TTL_DAYS)%"
+    ticket_token_pepper: "%env(TICKET_TOKEN_PEPPER)%"
+    gdpr_retention_days: "%env(int:GDPR_RETENTION_DAYS)%"
 
 services:
     # default configuration for services in *this* file
@@ -21,6 +24,10 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: "../src/"
+
+    App\Security\TicketTokenHasher:
+        arguments:
+            $pepper: "%ticket_token_pepper%"
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

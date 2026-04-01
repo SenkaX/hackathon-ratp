@@ -25,7 +25,6 @@
                     <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Arret</th>
                     <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Soumis le</th>
                     <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Statut</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -49,13 +48,10 @@
                                 <button class="btn" type="submit">Enregistrer</button>
                             </form>
                         </td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">
-                            <a class="btn btn-link" href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}">Voir</a>
-                        </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="7" style="padding:12px;">Aucun ticket.</td>
+                        <td colspan="6" style="padding:12px;">Aucun ticket.</td>
                     </tr>
                 {% endfor %}
                 </tbody>
