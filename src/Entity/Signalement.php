@@ -68,22 +68,6 @@ class Signalement
     #[ORM\Column(name: 'access_token', length: 64)]
     private ?string $accessToken = null;
 
-    #[ORM\Column(name: 'priorite_score', options: ['default' => 0])]
-    private int $prioriteScore = 0;
-
-    #[ORM\Column(name: 'confiance_score', options: ['default' => 100])]
-    private int $confianceScore = 100;
-
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?User $reviewedBy = null;
-
-    #[ORM\Column(name: 'reviewed_at', type: 'datetime_immutable', nullable: true)]
-    private ?\DateTimeImmutable $reviewedAt = null;
-
-    #[ORM\Column(name: 'review_note', type: 'text', nullable: true)]
-    private ?string $reviewNote = null;
-
     #[ORM\Column(length: 64, unique: true, nullable: true)]
     private ?string $tokenHash = null;
 
