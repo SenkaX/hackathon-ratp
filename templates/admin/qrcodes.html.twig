@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}QR codes des arrets{% endblock %}
+
+{% block body %}
+    <section class="card">
+        <h1>QR codes des arrets</h1>
+        <p class="muted">Chaque QR code redirige vers le formulaire public avec un stop_id pre-rempli.</p>
+        <p><a class="btn btn-link" href="{{ path('app_logout') }}">Se deconnecter</a></p>
+
+        <div class="qrcodes">
+            {% for item in items %}
+                <article class="qr-item">
+                    <h2>{{ item.stop.label }}</h2>
+                    <p class="muted">{{ item.stop.id }}</p>
+                    <img src="data:image/png;base64,{{ item.image_base64 }}" alt="QR code {{ item.stop.label }}">
+                    <p><a class="btn" href="{{ path('app_admin_qrcode_download', {id: item.stop.id}) }}">Telecharger PNG</a></p>
+                    <p class="muted">{{ item.target_url }}</p>
+                </article>
+            {% else %}
+                <p>Aucun arret disponible.</p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

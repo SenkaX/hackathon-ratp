@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau signalement{% endblock %}
+
+{% block body %}
+    <style>
+        .ratp-shell {
+            --ratp-blue: #2f4c99;
+            --ratp-jade: #00a88f;
+            --ratp-bg: #edf3fb;
+            --ratp-field: #f8fbff;
+            background: var(--ratp-blue);
+            border: 0;
+            border-radius: 20px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .ratp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 20px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent);
+            color: #ffffff;
+        }
+
+        .ratp-badge {
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 999px;
+            padding: 5px 12px;
+        }
+
+        .ratp-header p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
+        .ratp-content {
+            background: var(--ratp-bg);
+            padding: 24px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        .ratp-content h1 {
+            margin: 0 0 6px;
+            color: var(--ratp-blue);
+        }
+
+        .ratp-content .muted {
+            color: #2f4c99;
+            margin-bottom: 18px;
+        }
+
+        .ratp-content form > div {
+            margin-bottom: 14px;
+        }
+
+        .ratp-content label {
+            color: var(--ratp-blue);
+            font-weight: 700;
+        }
+
+        .ratp-content input,
+        .ratp-content select,
+        .ratp-content textarea {
+            background: var(--ratp-field);
+            border: 1px solid #b7cae2;
+            border-radius: 12px;
+            padding: 11px 12px;
+        }
+
+        .ratp-content input:focus,
+        .ratp-content select:focus,
+        .ratp-content textarea:focus {
+            border-color: var(--ratp-jade);
+            outline: 3px solid rgba(0, 168, 143, 0.2);
+            box-shadow: none;
+        }
+
+        .ratp-submit {
+            width: 100%;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            background: linear-gradient(90deg, #00a88f 0%, #00967f 100%);
+            border: 0;
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+            .ratp-content {
+                padding: 26px 28px;
+            }
+
+            .ratp-submit {
+                width: auto;
+                min-width: 240px;
+            }
+        }
+    </style>
+
+    <section class="card ratp-shell">
+        <div class="ratp-header">
+            <span class="ratp-badge">RATP</span>
+            <p>Faire un signalement</p>
+        </div>
+
+        <div class="ratp-content">
+            <h1>Signaler un incident</h1>
+            <p class="muted">Le formulaire est public. Votre lien de suivi vous sera envoye par email.</p>
+
+            {{ form_start(form) }}
+                {{ form_row(form.email) }}
+                {{ form_row(form.motif) }}
+                {{ form_row(form.stop) }}
+                {{ form_row(form.incident_date) }}
+                {{ form_row(form.details) }}
+
+                <button type="submit" class="ratp-submit">Envoyer le signalement</button>
+            {{ form_end(form) }}
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi ticket {{ signalement.id }}{% endblock %}
+
+{% block body %}
+    <section class="card">
+        <h1>Suivi du ticket</h1>
+        <div class="kv">
+            <strong>Statut</strong>
+            <span>{{ signalement.status.label() }}</span>
+
+            <strong>Motif</strong>
+            <span>{{ signalement.motif.label() }}</span>
+
+            <strong>Arret concerne</strong>
+            <span>{{ signalement.stop ? signalement.stop.label : 'Non renseigne' }}</span>
+
+            <strong>Date incident</strong>
+            <span>{{ signalement.incidentDate ? signalement.incidentDate|date('Y-m-d H:i') : 'Non renseignee' }}</span>
+
+            <strong>Date soumission</strong>
+            <span>{{ signalement.submittedAt|date('Y-m-d H:i:s') }}</span>
+
+            <strong>Details</strong>
+            <span>{{ signalement.details|nl2br }}</span>
+        </div>
+    </section>
+{% endblock %}

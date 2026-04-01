@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Signalement envoye{% endblock %}
+
+{% block body %}
+    <section class="card">
+        <h1>Merci, votre signalement a bien ete envoye.</h1>
+        <p class="muted">Vous allez recevoir un email contenant votre lien de suivi securise.</p>
+        <a class="btn btn-link" href="{{ path('app_signalement') }}">Envoyer un autre signalement</a>
+    </section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moderation des tickets{% endblock %}
+
+{% block body %}
+    <section class="card">
+        <h1>Moderation des tickets</h1>
+        <p class="muted">Accessible aux roles moderateur et admin.</p>
+        <p><a class="btn btn-link" href="{{ path('app_logout') }}">Se deconnecter</a></p>
+
+        {% for message in app.flashes('success') %}
+            <p style="color:#0a7f37;font-weight:600;">{{ message }}</p>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <p style="color:#b42318;font-weight:600;">{{ message }}</p>
+        {% endfor %}
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                <tr>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">ID</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Email</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Motif</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Arret</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Soumis le</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Statut</th>
+                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.id }}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.email }}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.motif.label() }}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.stop ? ticket.stop.label : 'Non renseigne' }}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.submittedAt|date('Y-m-d H:i') }}</td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">
+                            <form method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}" style="display:flex; gap:8px; align-items:center;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
+                                <select name="status">
+                                    {% for status in statuses %}
+                                        <option value="{{ status.value }}" {{ ticket.status.value == status.value ? 'selected' : '' }}>
+                                            {{ status.label() }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn" type="submit">Enregistrer</button>
+                            </form>
+                        </td>
+                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">
+                            <a class="btn btn-link" href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}">Voir</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" style="padding:12px;">Aucun ticket.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

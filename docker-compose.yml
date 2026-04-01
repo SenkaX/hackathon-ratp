@@ -1,0 +1,38 @@
+services:
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: hackathon_ratp_php
+        working_dir: /app
+        volumes:
+            - ./:/app
+            - /app/var
+        networks:
+            - hackathon_network
+        env_file:
+            - .env
+            - .env.local
+        environment:
+            # DATABASE_URL se charge depuis .env.local (Supabase PostgreSQL)
+            APP_ENV: dev
+            APP_DEBUG: "true"
+
+    nginx:
+        image: nginx:alpine
+        container_name: hackathon_ratp_nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./:/app
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+            - ./docker/nginx/ssl:/etc/nginx/ssl
+        networks:
+            - hackathon_network
+        depends_on:
+            - php
+
+networks:
+    hackathon_network:
+        driver: bridge

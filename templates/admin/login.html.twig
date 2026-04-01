@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion administration{% endblock %}
+
+{% block body %}
+    <section class="card" style="max-width: 520px; margin: 0 auto;">
+        <h1>Connexion administration</h1>
+        <p class="muted">Acces reserve aux comptes internes.</p>
+
+        {% if error %}
+            <p style="color:#b42318;font-weight:600;">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_admin_login') }}">
+            <div style="margin-bottom:12px;">
+                <label for="username">Email</label>
+                <input id="username" type="email" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label for="password">Mot de passe</label>
+                <input id="password" type="password" name="_password" autocomplete="current-password" required>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn" type="submit">Se connecter</button>
+        </form>
+    </section>
+{% endblock %}
