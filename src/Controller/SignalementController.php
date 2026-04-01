@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Signalement;
+use App\Enum\SignalementStatus;
 use App\Form\SignalementType;
 use App\Repository\BusStopRepository;
+use App\Repository\MotifGraviteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +22,7 @@ final class SignalementController extends AbstractController
     public function form(
         Request $request,
         BusStopRepository $busStopRepository,
+        MotifGraviteRepository $motifGraviteRepository,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         HttpClientInterface $client,
@@ -39,6 +42,15 @@ final class SignalementController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $signalement->setAccessToken(bin2hex(random_bytes(32)));
             $signalement->setSubmittedAt(new \DateTimeImmutable());
+            $signalement->setStatus(SignalementStatus::EnAttenteValidation);
+            $signalement->setConfianceScore(100);
+
+            $gravite = 1;
+            if ($signalement->getMotif() !== null) {
+                $gravite = $motifGraviteRepository->find($signalement->getMotif())?->getGravite() ?? 1;
+            }
+
+            $signalement->setPrioriteScore($this->computePriorityScore($gravite, $signalement->getConfianceScore()));
 
             $entityManager->persist($signalement);
             $entityManager->flush();
@@ -107,5 +119,12 @@ final class SignalementController extends AbstractController
     public function confirmation(): Response
     {
         return $this->render('signalement/confirmation.html.twig');
+    }
+
+    private function computePriorityScore(int $gravite, int $confianceScore): int
+    {
+        $score = ($gravite * 15) + intdiv($confianceScore, 4);
+
+        return max(0, min(100, $score));
     }
 }
