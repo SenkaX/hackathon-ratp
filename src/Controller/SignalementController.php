@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Signalement;
+use App\Enum\SignalementStatus;
 use App\Form\SignalementType;
 use App\Repository\BusStopRepository;
+use App\Repository\MotifGraviteRepository;
 use App\Security\TicketTokenHasher;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -21,6 +23,7 @@ final class SignalementController extends AbstractController
     public function form(
         Request $request,
         BusStopRepository $busStopRepository,
+        MotifGraviteRepository $motifGraviteRepository,
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         HttpClientInterface $client,
@@ -40,10 +43,18 @@ final class SignalementController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $signalement->setSubmittedAt(new \DateTimeImmutable());
+            $signalement->setStatus(SignalementStatus::EnAttenteValidation);
+            $signalement->setConfianceScore(100);
+
+            $gravite = 1;
+            if ($signalement->getMotif() !== null) {
+                $gravite = $motifGraviteRepository->find($signalement->getMotif())?->getGravite() ?? 1;
+            }
+
+            $signalement->setPrioriteScore($this->computePriorityScore($gravite, $signalement->getConfianceScore()));
 
             $rawTicketToken = bin2hex(random_bytes(32));
             $signalement->setTokenHash($ticketTokenHasher->hashToken($rawTicketToken));
-            // Keep compatibility with current Supabase schema where access_token is NOT NULL.
             $signalement->setAccessToken(bin2hex(random_bytes(32)));
 
             $ttlDays = max(1, (int) $this->getParameter('ticket_token_ttl_days'));
@@ -132,5 +143,12 @@ final class SignalementController extends AbstractController
     public function confirmation(): Response
     {
         return $this->render('signalement/confirmation.html.twig');
+    }
+
+    private function computePriorityScore(int $gravite, int $confianceScore): int
+    {
+        $score = ($gravite * 15) + intdiv($confianceScore, 4);
+
+        return max(0, min(100, $score));
     }
 }

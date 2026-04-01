@@ -11,16 +11,16 @@ final class Version20260401110000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Legacy placeholder migration kept for Supabase migration history consistency.';
+        return 'Add missing statuses (en_cours, resolu) to signalement table';
     }
 
     public function up(Schema $schema): void
     {
-        // No-op: migration already executed historically on the target database.
+        $this->addSql("ALTER TABLE signalement ADD CONSTRAINT check_status CHECK (status IN ('nouveau', 'en_attente_validation', 'valide', 'en_cours', 'sans_suite', 'escalade_juridique', 'resolu', 'traite', 'clos'))");
     }
 
     public function down(Schema $schema): void
     {
-        // No-op.
+        $this->addSql('ALTER TABLE signalement DROP CONSTRAINT check_status');
     }
 }

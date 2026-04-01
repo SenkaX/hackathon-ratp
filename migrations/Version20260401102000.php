@@ -11,16 +11,16 @@ final class Version20260401102000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Legacy placeholder migration kept for Supabase migration history consistency.';
+        return 'Normalize legacy signalement status values to en_attente_validation';
     }
 
     public function up(Schema $schema): void
     {
-        // No-op: migration already executed historically on the target database.
+        $this->addSql("UPDATE signalement SET status = 'en_attente_validation' WHERE status IN ('nouveau', 'en_cours')");
     }
 
     public function down(Schema $schema): void
     {
-        // No-op.
+        $this->addSql("UPDATE signalement SET status = 'en_cours' WHERE status = 'en_attente_validation'");
     }
 }

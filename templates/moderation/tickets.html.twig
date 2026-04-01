@@ -1,61 +1,925 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Moderation des tickets{% endblock %}
+{% block title %}Moderation des tickets - Dashboard Kanban{% endblock %}
 
 {% block body %}
-    <section class="card">
-        <h1>Moderation des tickets</h1>
-        <p class="muted">Accessible aux roles moderateur et admin.</p>
-        <p><a class="btn btn-link" href="{{ path('app_logout') }}">Se deconnecter</a></p>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        {% for message in app.flashes('success') %}
-            <p style="color:#0a7f37;font-weight:600;">{{ message }}</p>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <p style="color:#b42318;font-weight:600;">{{ message }}</p>
-        {% endfor %}
+        .dashboard-shell {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
+            border: 0;
+            padding: 0;
+            min-height: 100vh;
+            border-radius: 0;
+        }
 
-        <div style="overflow-x:auto;">
-            <table style="width:100%; border-collapse: collapse;">
-                <thead>
-                <tr>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">ID</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Email</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Motif</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Arret</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Soumis le</th>
-                    <th style="text-align:left; border-bottom:1px solid #dbe3ec; padding:8px;">Statut</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for ticket in tickets %}
-                    <tr>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.id }}</td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.email }}</td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.motif.label() }}</td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.stop ? ticket.stop.label : 'Non renseigne' }}</td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">{{ ticket.submittedAt|date('Y-m-d H:i') }}</td>
-                        <td style="padding:8px; border-bottom:1px solid #eef2f7;">
-                            <form method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}" style="display:flex; gap:8px; align-items:center;">
-                                <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
-                                <select name="status">
-                                    {% for status in statuses %}
-                                        <option value="{{ status.value }}" {{ ticket.status.value == status.value ? 'selected' : '' }}>
-                                            {{ status.label() }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <button class="btn" type="submit">Enregistrer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6" style="padding:12px;">Aucun ticket.</td>
-                    </tr>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 256px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-text strong {
+            display: block;
+            color: #111827;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 6px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 1.02rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background: #e2e8f0;
+            color: #1e3a8a;
+        }
+
+        .sidebar-link.active {
+            background: #e0e7ff;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .sidebar-content {
+            min-width: 0;
+        }
+
+        .dashboard-head {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .dashboard-head h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .dashboard-head p {
+            margin: 4px 0 0;
+            color: #6b7280;
+            font-size: 0.92rem;
+        }
+
+        .logout-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: #1f2937;
+            padding: 8px 14px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .dashboard-body {
+            padding: 32px 48px;
+            max-width: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .kanban-board-wrapper {
+            overflow-x: auto;
+            flex: 1;
+            margin-left: -48px;
+            margin-right: -48px;
+            padding-left: 48px;
+            padding-right: 48px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .kpi-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .kpi-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-label {
+            font-size: 0.80rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2f4c99;
+        }
+
+        .filters-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .filters-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group-actions {
+            justify-content: flex-end;
+        }
+
+        .filter-group label {
+            font-size: 0.80rem;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .filter-group select {
+            border: 1px solid #d1d5db;
+            border-radius: 9px;
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            background: #fff;
+            color: #1f2937;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            min-height: 42px;
+        }
+
+        .btn-filter {
+            background: #2f4c99;
+            color: #fff;
+            border: 0;
+            padding: 10px 18px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-filter:hover {
+            background: #253a75;
+        }
+
+        .btn-reset {
+            background: #f3f4f6;
+            color: #2f4c99;
+            border: 1px solid #2f4c99;
+            padding: 10px 18px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            border-radius: 9px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #e0eaf5;
+        }
+
+        .alerts {
+            margin-bottom: 20px;
+        }
+
+        .alert-msg {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .kanban-board {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(6, 380px);
+            padding-bottom: 20px;
+            min-width: min-content;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .kanban-board {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kanban-column {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 700px;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.93rem;
+        }
+
+        .column-count {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .column-content {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            max-height: 900px;
+        }
+
+        .column-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #9ca3af;
+            font-size: 0.95rem;
+            text-align: center;
+            min-height: 200px;
+        }
+
+        .ticket {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: box-shadow 0.2s, transform 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ticket:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ticket-id {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .ticket-priority {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .priority-high {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-medium {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .priority-low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .ticket-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .ticket-category {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .ticket-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .ticket-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ticket-actions {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .ticket-actions select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 9px 10px;
+            font-size: 0.80rem;
+            background: #fff;
+            color: #1f2937;
+        }
+
+        .ticket-actions textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 9px 10px;
+            font-size: 0.80rem;
+            min-height: 70px;
+            color: #1f2937;
+            resize: vertical;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: #2f4c99;
+            color: #fff;
+            border: 0;
+            padding: 10px;
+            font-size: 0.80rem;
+            font-weight: 700;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background: #253a75;
+        }
+
+        .btn-view {
+            width: 100%;
+            background: #f3f4f6;
+            color: #2f4c99;
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            font-size: 0.80rem;
+            font-weight: 700;
+            border-radius: 7px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-view:hover {
+            background: #e5e7eb;
+        }
+
+        .review-note {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .ticket {
+            cursor: move;
+        }
+
+        .ticket.dragging {
+            opacity: 0.5;
+            background: #f3f4f6;
+        }
+
+        .column-content {
+            transition: background-color 0.2s;
+        }
+
+        .column-content.drag-over {
+            background-color: #e0e7ff;
+            border-radius: 8px;
+        }
+    </style>
+
+    <section class="dashboard-shell">
+        <div class="dashboard-layout">
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="brand-logo">R</div>
+                    <div class="brand-text">
+                        <strong>RATP Bus</strong>
+                        <span>Gestion des incidents</span>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <a href="{{ path('app_moderation_tickets') }}" class="sidebar-link">Tableau de bord</a>
+                    <a href="{{ path('app_moderation_tickets') }}" class="sidebar-link active">Vue Kanban</a>
+                    <a href="#" class="sidebar-link">Projets</a>
+                    <a href="#" class="sidebar-link">Utilisateurs</a>
+                    <a href="#" class="sidebar-link">Parametres</a>
+                </nav>
+            </aside>
+
+            <div class="sidebar-content">
+                <header class="dashboard-head">
+                    <div>
+                        <h1>Tableau de bord Modération</h1>
+                        <p>Vue Kanban - Gestion centralisée des incidents</p>
+                    </div>
+                    <a href="{{ path('app_logout') }}" class="logout-btn">Se déconnecter</a>
+                </header>
+
+                <div class="dashboard-body">
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <span class="kpi-label">Total</span>
+                    <div class="kpi-value" id="kpi-total">{{ kpis.total }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">En attente</span>
+                    <div class="kpi-value" id="kpi-pending">{{ kpis.pending }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Validés</span>
+                    <div class="kpi-value" id="kpi-validated">{{ kpis.validated }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Sans suite</span>
+                    <div class="kpi-value" id="kpi-dismissed">{{ kpis.dismissed }}</div>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="filters-section">
+                <form method="get">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="status">Statut</label>
+                            <select id="status" name="status">
+                                <option value="">Tous</option>
+                                {% for status in statuses %}
+                                    <option value="{{ status.value }}" {{ filters.status == status.value ? 'selected' : '' }}>
+                                        {{ status.label() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="motif">Motif</label>
+                            <select id="motif" name="motif">
+                                <option value="">Tous</option>
+                                {% for motif in motifs %}
+                                    <option value="{{ motif.value }}" {{ filters.motif == motif.value ? 'selected' : '' }}>
+                                        {{ motif.label() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="stop">Arrêt</label>
+                            <select id="stop" name="stop">
+                                <option value="">Tous</option>
+                                {% for stop in stops %}
+                                    <option value="{{ stop.id }}" {{ filters.stop == stop.id ? 'selected' : '' }}>
+                                        {{ stop.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group filter-group-actions">
+                            <div class="filter-actions">
+                                <button type="submit" class="btn-filter">Filtrer</button>
+                                <a href="{{ path('app_moderation_tickets') }}" class="btn-reset">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Alerts -->
+            {% if app.flashes('success') or app.flashes('error') %}
+                <div class="alerts">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert-msg alert-success">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert-msg alert-error">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Kanban Board -->
+            <div class="kanban-board-wrapper">
+                <div class="kanban-board">
+                {% set lanes = [
+                    {'status': 'en_attente_validation', 'label': 'En attente de validation', 'color': 'bg-yellow-500'},
+                    {'status': 'en_cours', 'label': 'En cours', 'color': 'bg-blue-500'},
+                    {'status': 'valide', 'label': 'Validé', 'color': 'bg-green-500'},
+                    {'status': 'sans_suite', 'label': 'Classé sans suite', 'color': 'bg-gray-500'},
+                    {'status': 'escalade_juridique', 'label': 'Transmis au juridique', 'color': 'bg-purple-500'},
+                    {'status': 'resolu', 'label': 'Résolu', 'color': 'bg-emerald-500'}
+                ] %}
+
+                {% for lane in lanes %}
+                    {% set laneTickets = [] %}
+                    {% for ticket in tickets %}
+                        {% if ticket.status.value == lane.status %}
+                            {% set laneTickets = laneTickets|merge([ticket]) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="kanban-column">
+                        <div class="column-header" style="background-color: {% if lane.color == 'bg-yellow-500' %}#eab308{% elseif lane.color == 'bg-green-500' %}#22c55e{% elseif lane.color == 'bg-blue-500' %}#3b82f6{% elseif lane.color == 'bg-gray-500' %}#6b7280{% elseif lane.color == 'bg-purple-500' %}#a855f7{% elseif lane.color == 'bg-emerald-500' %}#10b981{% endif %}">
+                            <div class="column-title">
+                                📋 {{ lane.label }}
+                            </div>
+                            <div class="column-count">{{ laneTickets|length }}</div>
+                        </div>
+
+                        <div class="column-content" data-status="{{ lane.status }}">
+                            {% if laneTickets|length == 0 %}
+                                <div class="column-empty">Aucun ticket</div>
+                            {% else %}
+                                {% for ticket in laneTickets %}
+                                    <div class="ticket" draggable="true" data-ticket-id="{{ ticket.id }}" data-status="{{ ticket.status.value }}">
+                                        <div class="ticket-header">
+                                            <span class="ticket-id">{{ ticket.id }}</span>
+                                            <span class="ticket-priority priority-{% if ticket.prioriteScore >= 75 %}critical{% elseif ticket.prioriteScore >= 50 %}high{% elseif ticket.prioriteScore >= 25 %}medium{% else %}low{% endif %}">
+                                                {% if ticket.prioriteScore >= 75 %}Critique{% elseif ticket.prioriteScore >= 50 %}Haute{% elseif ticket.prioriteScore >= 25 %}Moyenne{% else %}Faible{% endif %}
+                                            </span>
+                                        </div>
+
+                                        <p class="ticket-title">{{ ticket.motif.label() }}</p>
+
+                                        <span class="ticket-category">{{ ticket.motif.value }}</span>
+
+                                        <div class="ticket-meta">
+                                            <span>📍 {{ ticket.stop ? ticket.stop.label : 'Aucun arrêt' }}</span>
+                                            <span>👤 Agent infiltré</span>
+                                            <span>🕐 {{ ticket.submittedAt|date('d/m/Y H:i') }}</span>
+                                            <span>🛡️ Confiance: {{ ticket.confianceScore }}%</span>
+                                        </div>
+
+                                        <form class="ticket-actions" method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
+
+                                            <select name="status">
+                                                {% for status in statuses %}
+                                                    <option value="{{ status.value }}" {{ ticket.status.value == status.value ? 'selected' : '' }}>
+                                                        {{ status.label() }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <button type="submit" class="btn-save">💾 Enregistrer</button>
+                                            <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view">👁️ Voir</a>
+                                        </form>
+
+                                        {% if ticket.reviewedAt %}
+                                            <div class="review-note">
+                                                Dernière revue: {{ ticket.reviewedAt|date('Y-m-d H:i') }}
+                                                {% if ticket.reviewedBy %}
+                                                    par {{ ticket.reviewedBy.email }}
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
                 {% endfor %}
-                </tbody>
-            </table>
+                </div>
+                </div>
+            </div>
         </div>
     </section>
+
+    <script>
+        let draggedTicket = null;
+
+        // Function to update column counters
+        function updateColumnCounters() {
+            document.querySelectorAll('.column-content').forEach(column => {
+                const ticketCount = column.querySelectorAll('.ticket').length;
+                const header = column.closest('.kanban-column').querySelector('.column-header');
+                const counter = header.querySelector('.column-count');
+                if (counter) {
+                    counter.textContent = ticketCount;
+                }
+            });
+        }
+
+        function updateTopKpis() {
+            const total = document.querySelectorAll('.ticket').length;
+            const pending = document.querySelectorAll('.column-content[data-status="en_attente_validation"] .ticket').length;
+            const validated = document.querySelectorAll('.column-content[data-status="valide"] .ticket').length;
+            const dismissed = document.querySelectorAll('.column-content[data-status="sans_suite"] .ticket').length;
+
+            const totalEl = document.getElementById('kpi-total');
+            const pendingEl = document.getElementById('kpi-pending');
+            const validatedEl = document.getElementById('kpi-validated');
+            const dismissedEl = document.getElementById('kpi-dismissed');
+
+            if (totalEl) totalEl.textContent = String(total);
+            if (pendingEl) pendingEl.textContent = String(pending);
+            if (validatedEl) validatedEl.textContent = String(validated);
+            if (dismissedEl) dismissedEl.textContent = String(dismissed);
+        }
+
+        // Function to attach drag events to a ticket
+        function attachDragEvents(ticket) {
+            ticket.addEventListener('dragstart', function(e) {
+                draggedTicket = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
+            });
+
+            ticket.addEventListener('dragend', function(e) {
+                this.classList.remove('dragging');
+                document.querySelectorAll('.column-content').forEach(col => {
+                    col.classList.remove('drag-over');
+                });
+            });
+        }
+
+        // Initialize drag events for all existing tickets
+        document.querySelectorAll('.ticket').forEach(ticket => {
+            attachDragEvents(ticket);
+        });
+
+        // Setup drop zones
+        document.querySelectorAll('.column-content').forEach(column => {
+            column.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+
+            column.addEventListener('dragleave', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('drag-over');
+                }
+            });
+
+            column.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('drag-over');
+
+                if (draggedTicket) {
+                    const ticketId = draggedTicket.getAttribute('data-ticket-id');
+                    const newStatus = this.getAttribute('data-status');
+                    const oldStatus = draggedTicket.getAttribute('data-status');
+                    const targetColumn = this;
+                    const movedTicket = draggedTicket;
+                    const sourceColumn = movedTicket.parentElement;
+
+                    if (newStatus !== oldStatus) {
+                        // Optimistic UI update: move immediately, then sync server
+                        movedTicket.style.opacity = '0.7';
+
+                        const emptyMsg = targetColumn.querySelector('.column-empty');
+                        if (emptyMsg) {
+                            emptyMsg.remove();
+                        }
+
+                        movedTicket.setAttribute('data-status', newStatus);
+                        const movedSelect = movedTicket.querySelector('select[name="status"]');
+                        if (movedSelect) {
+                            movedSelect.value = newStatus;
+                        }
+                        targetColumn.appendChild(movedTicket);
+
+                        if (sourceColumn && sourceColumn.querySelectorAll('.ticket').length === 0) {
+                            sourceColumn.innerHTML = '<div class="column-empty">Aucun ticket</div>';
+                        }
+
+                        updateColumnCounters();
+                        updateTopKpis();
+
+                        // Send update to server
+                        fetch(`/moderation/tickets/${ticketId}/status-ajax`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                id: ticketId,
+                                status: newStatus
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Failed to update');
+                            movedTicket.style.opacity = '1';
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Rollback UI when server update fails
+                            movedTicket.setAttribute('data-status', oldStatus);
+                            const rollbackSelect = movedTicket.querySelector('select[name="status"]');
+                            if (rollbackSelect) {
+                                rollbackSelect.value = oldStatus;
+                            }
+                            if (sourceColumn) {
+                                const sourceEmpty = sourceColumn.querySelector('.column-empty');
+                                if (sourceEmpty) {
+                                    sourceEmpty.remove();
+                                }
+                                sourceColumn.appendChild(movedTicket);
+                            }
+
+                            if (targetColumn.querySelectorAll('.ticket').length === 0) {
+                                targetColumn.innerHTML = '<div class="column-empty">Aucun ticket</div>';
+                            }
+
+                            movedTicket.style.opacity = '1';
+                            updateColumnCounters();
+                            updateTopKpis();
+                            alert('Erreur lors de la mise à jour du statut');
+                        });
+                    }
+
+                    draggedTicket = null;
+                }
+            });
+        });
+
+        updateTopKpis();
+    </script>
 {% endblock %}
