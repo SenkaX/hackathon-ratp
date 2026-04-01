@@ -7,6 +7,7 @@ use App\Enum\SignalementStatus;
 use App\Form\SignalementType;
 use App\Repository\BusStopRepository;
 use App\Repository\MotifGraviteRepository;
+use App\Security\TicketTokenHasher;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +27,7 @@ final class SignalementController extends AbstractController
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         HttpClientInterface $client,
+        TicketTokenHasher $ticketTokenHasher,
     ): Response {
         $signalement = new Signalement();
         $signalement->setIncidentDate(new \DateTimeImmutable());
@@ -40,7 +42,6 @@ final class SignalementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $signalement->setAccessToken(bin2hex(random_bytes(32)));
             $signalement->setSubmittedAt(new \DateTimeImmutable());
             $signalement->setStatus(SignalementStatus::EnAttenteValidation);
             $signalement->setConfianceScore(100);
@@ -52,6 +53,14 @@ final class SignalementController extends AbstractController
 
             $signalement->setPrioriteScore($this->computePriorityScore($gravite, $signalement->getConfianceScore()));
 
+            $rawTicketToken = bin2hex(random_bytes(32));
+            $signalement->setTokenHash($ticketTokenHasher->hashToken($rawTicketToken));
+            // Keep compatibility with current Supabase schema where access_token is NOT NULL.
+            $signalement->setAccessToken(bin2hex(random_bytes(32)));
+
+            $ttlDays = max(1, (int) $this->getParameter('ticket_token_ttl_days'));
+            $signalement->setTokenExpiresAt($signalement->getSubmittedAt()->modify(sprintf('+%d days', $ttlDays)));
+
             $entityManager->persist($signalement);
             $entityManager->flush();
 
@@ -59,7 +68,7 @@ final class SignalementController extends AbstractController
                 'app_ticket_show',
                 [
                     'id' => $signalement->getId(),
-                    'token' => (string) $signalement->getAccessToken(),
+                    'token' => $rawTicketToken,
                 ],
                 UrlGeneratorInterface::ABSOLUTE_PATH
             );
@@ -78,28 +87,44 @@ final class SignalementController extends AbstractController
             ];
 
             $webhookUrl = (string) $this->getParameter('n8n_webhook_url');
+            $webhookSecret = trim((string) $this->getParameter('n8n_webhook_secret'));
+            $isDevLikeEnv = \in_array((string) $this->getParameter('kernel.environment'), ['dev', 'test'], true);
+
             if ($webhookUrl !== '') {
-                try {
-                    $response = $client->request('POST', $webhookUrl, [
-                        'headers' => [
-                            'Content-Type' => 'application/json',
-                            'X-Webhook-Secret' => (string) $this->getParameter('n8n_webhook_secret'),
-                        ],
-                        'json' => $payload,
+                if ($webhookSecret === '') {
+                    $logger->error('N8N webhook secret is empty. Webhook call blocked.', [
+                        'signalement_id' => $signalement->getId(),
+                        'env' => (string) $this->getParameter('kernel.environment'),
                     ]);
 
-                    $statusCode = $response->getStatusCode();
-                    if ($statusCode < 200 || $statusCode >= 300) {
-                        $logger->error('Webhook n8n returned non-success status.', [
-                            'status_code' => $statusCode,
+                    if (!$isDevLikeEnv) {
+                        throw new \RuntimeException('Webhook secret missing outside dev/test.');
+                    }
+                } else {
+                    try {
+                        $response = $client->request('POST', $webhookUrl, [
+                            'headers' => [
+                                'Content-Type' => 'application/json',
+                                'X-Webhook-Secret' => $webhookSecret,
+                            ],
+                            'json' => $payload,
+                        ]);
+
+                        $statusCode = $response->getStatusCode();
+                        if ($statusCode < 200 || $statusCode >= 300) {
+                            $logger->error('Webhook n8n returned non-success status.', [
+                                'status_code' => $statusCode,
+                                'signalement_id' => $signalement->getId(),
+                            ]);
+                        }
+                    } catch (\Throwable $exception) {
+                        $reference = bin2hex(random_bytes(8));
+                        $logger->error('Webhook n8n call failed.', [
+                            'reference' => $reference,
+                            'exception_class' => $exception::class,
                             'signalement_id' => $signalement->getId(),
                         ]);
                     }
-                } catch (\Throwable $exception) {
-                    $logger->error('Webhook n8n call failed.', [
-                        'exception' => $exception,
-                        'signalement_id' => $signalement->getId(),
-                    ]);
                 }
             } else {
                 $logger->warning('N8N webhook URL is empty, webhook was not called.', [

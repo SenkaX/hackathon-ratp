@@ -130,11 +130,26 @@
             border: 1px solid #eef2f7;
             background: white;
         }
+
+        .site-footer {
+            margin-top: 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .site-footer a {
+            color: var(--accent);
+        }
     </style>
 </head>
 <body>
 <main>
     {% block body %}{% endblock %}
+
+    <p class="site-footer">
+        <a href="{{ path('app_privacy_policy') }}">Politique de confidentialite</a>
+    </p>
 </main>
 </body>
 </html>

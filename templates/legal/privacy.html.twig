@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de confidentialite{% endblock %}
+
+{% block body %}
+    <section class="card">
+        <h1>Politique de confidentialite</h1>
+
+        <h2>Finalite du traitement</h2>
+        <p class="muted">Les donnees transmises via le formulaire servent a traiter les signalements et assurer le suivi du ticket associe.</p>
+
+        <h2>Donnees collectees</h2>
+        <p class="muted">Adresse email, motif, description des faits, arret concerne, date de l'incident, date de soumission.</p>
+
+        <h2>Destinataires</h2>
+        <p class="muted">Equipe de moderation interne et service d'automatisation n8n pour l'envoi du lien de suivi.</p>
+
+        <h2>Duree de conservation</h2>
+        <p class="muted">Les donnees sont conservees 365 jours puis anonymisees automatiquement.</p>
+
+        <h2>Vos droits</h2>
+        <p class="muted">Vous pouvez demander l'acces, la rectification ou l'effacement de vos donnees via le canal de contact prevu par l'organisation.</p>
+
+        <p><a class="btn btn-link" href="{{ path('app_signalement') }}">Retour au formulaire</a></p>
+    </section>
+{% endblock %}
