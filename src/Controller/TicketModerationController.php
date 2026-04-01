@@ -18,6 +18,83 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/moderation/tickets')]
 final class TicketModerationController extends AbstractController
 {
+    #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
+    public function dashboard(): Response
+    {
+        $kpis = [
+            ['label' => 'Total Tickets', 'value' => 10, 'color' => '#3b82f6', 'icon' => 'pulse'],
+            ['label' => 'En attente validation', 'value' => 2, 'color' => '#eab308', 'icon' => 'clock'],
+            ['label' => 'En cours', 'value' => 3, 'color' => '#a855f7', 'icon' => 'trend'],
+            ['label' => 'Resolus', 'value' => 1, 'color' => '#22c55e', 'icon' => 'check'],
+            ['label' => 'Tickets critiques', 'value' => 1, 'color' => '#ef4444', 'icon' => 'alert'],
+            ['label' => 'Indice confiance moy.', 'value' => '79%', 'color' => '#6366f1', 'icon' => 'shield'],
+        ];
+
+        $categoryBars = [
+            ['label' => 'Comportement suspect', 'value' => 2],
+            ['label' => 'Bagarre/Agression', 'value' => 1],
+            ['label' => 'Plainte client', 'value' => 2],
+            ['label' => 'Accident', 'value' => 1],
+            ['label' => 'Retard', 'value' => 1],
+            ['label' => 'Objet perdu', 'value' => 1],
+            ['label' => 'Arret saute', 'value' => 1],
+            ['label' => 'Autre', 'value' => 2],
+        ];
+
+        $statusDistribution = [
+            ['label' => 'En attente de validation', 'value' => 20, 'color' => '#3b82f6'],
+            ['label' => 'Valide', 'value' => 20, 'color' => '#8b5cf6'],
+            ['label' => 'En cours', 'value' => 30, 'color' => '#ec4899'],
+            ['label' => 'Classe sans suite', 'value' => 10, 'color' => '#10b981'],
+            ['label' => 'Resolu', 'value' => 10, 'color' => '#ef4444'],
+            ['label' => 'Juridique', 'value' => 10, 'color' => '#f59e0b'],
+        ];
+
+        $recentTickets = [
+            [
+                'id' => 'TICK-009',
+                'priority' => 'Moyenne',
+                'priorityColor' => '#3b82f6',
+                'title' => 'Client mecontent - Delai de reponse',
+                'tags' => ['Plainte client', 'Ligne 72'],
+                'description' => "Plainte d'un client concernant l'absence de reponse a sa precedente reclamation.",
+                'location' => 'Chatelet',
+                'source' => 'Email',
+                'date' => '30 mars 2026 10:00',
+                'confidence' => 75,
+                'assigned' => 'Assigne',
+            ],
+            [
+                'id' => 'TICK-001',
+                'priority' => 'Haute',
+                'priorityColor' => '#f97316',
+                'title' => 'Retard repetitif ligne 38 - Chauffeur Jean D.',
+                'tags' => ['Comportement suspect', 'Ligne 38'],
+                'description' => "Le chauffeur Jean D. a accumule 5 retards significatifs sur les 2 dernieres semaines.",
+                'location' => 'Chatelet - Porte de Versailles',
+                'source' => 'Agent infiltre',
+                'date' => '30 mars 2026 08:15',
+                'confidence' => 85,
+                'assigned' => 'Assigne',
+            ],
+        ];
+
+        $hotspots = [
+            ['place' => 'Republique - Marche du vendredi', 'window' => 'Vendredi 7h-10h', 'incidents' => 12, 'level' => 'Haute'],
+            ['place' => 'Chatelet - Rue de Rivoli', 'window' => 'Lundi-Vendredi 17h-19h', 'incidents' => 8, 'level' => 'Moyenne'],
+            ['place' => 'Gare du Nord - Boulevard Magenta', 'window' => 'Quotidien 8h-9h', 'incidents' => 6, 'level' => 'Moyenne'],
+            ['place' => 'Chatelet - Porte de Versailles', 'window' => 'Mardi-Jeudi 7h30-9h', 'incidents' => 5, 'level' => 'Faible'],
+        ];
+
+        return $this->render('moderation/dashboard.html.twig', [
+            'kpis' => $kpis,
+            'categoryBars' => $categoryBars,
+            'statusDistribution' => $statusDistribution,
+            'recentTickets' => $recentTickets,
+            'hotspots' => $hotspots,
+        ]);
+    }
+
     #[Route('', name: 'app_moderation_tickets', methods: ['GET'])]
     public function index(
         Request $request,
