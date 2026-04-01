@@ -48,6 +48,21 @@ class Signalement
 
     #[ORM\Column(length: 32, enumType: SignalementStatus::class, options: ['default' => 'en_attente_validation'])]
     private SignalementStatus $status = SignalementStatus::EnAttenteValidation;
+        #[ORM\Column(options: ['default' => 0])]
+    private int $prioriteScore = 0;
+
+    #[ORM\Column(options: ['default' => 100])]
+    private int $confianceScore = 100;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $reviewedBy = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $reviewedAt = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $reviewNote = null;
 
     #[ORM\Column(name: 'access_token', length: 64)]
     private ?string $accessToken = null;
