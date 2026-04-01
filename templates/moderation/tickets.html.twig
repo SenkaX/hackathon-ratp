@@ -603,19 +603,19 @@
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <span class="kpi-label">Total</span>
-                    <div class="kpi-value">{{ kpis.total }}</div>
+                    <div class="kpi-value" id="kpi-total">{{ kpis.total }}</div>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">En attente</span>
-                    <div class="kpi-value">{{ kpis.pending }}</div>
+                    <div class="kpi-value" id="kpi-pending">{{ kpis.pending }}</div>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Validés</span>
-                    <div class="kpi-value">{{ kpis.validated }}</div>
+                    <div class="kpi-value" id="kpi-validated">{{ kpis.validated }}</div>
                 </div>
                 <div class="kpi-card">
                     <span class="kpi-label">Sans suite</span>
-                    <div class="kpi-value">{{ kpis.dismissed }}</div>
+                    <div class="kpi-value" id="kpi-dismissed">{{ kpis.dismissed }}</div>
                 </div>
             </div>
 
@@ -774,7 +774,6 @@
         // Function to update column counters
         function updateColumnCounters() {
             document.querySelectorAll('.column-content').forEach(column => {
-                const status = column.getAttribute('data-status');
                 const ticketCount = column.querySelectorAll('.ticket').length;
                 const header = column.closest('.kanban-column').querySelector('.column-header');
                 const counter = header.querySelector('.column-count');
@@ -782,6 +781,23 @@
                     counter.textContent = ticketCount;
                 }
             });
+        }
+
+        function updateTopKpis() {
+            const total = document.querySelectorAll('.ticket').length;
+            const pending = document.querySelectorAll('.column-content[data-status="en_attente_validation"] .ticket').length;
+            const validated = document.querySelectorAll('.column-content[data-status="valide"] .ticket').length;
+            const dismissed = document.querySelectorAll('.column-content[data-status="sans_suite"] .ticket').length;
+
+            const totalEl = document.getElementById('kpi-total');
+            const pendingEl = document.getElementById('kpi-pending');
+            const validatedEl = document.getElementById('kpi-validated');
+            const dismissedEl = document.getElementById('kpi-dismissed');
+
+            if (totalEl) totalEl.textContent = String(total);
+            if (pendingEl) pendingEl.textContent = String(pending);
+            if (validatedEl) validatedEl.textContent = String(validated);
+            if (dismissedEl) dismissedEl.textContent = String(dismissed);
         }
 
         // Function to attach drag events to a ticket
@@ -800,6 +816,11 @@
                 });
             });
         }
+
+        // Initialize drag events for all existing tickets
+        document.querySelectorAll('.ticket').forEach(ticket => {
+            attachDragEvents(ticket);
+        });
 
         // Setup drop zones
         document.querySelectorAll('.column-content').forEach(column => {
@@ -825,10 +846,31 @@
                     const newStatus = this.getAttribute('data-status');
                     const oldStatus = draggedTicket.getAttribute('data-status');
                     const targetColumn = this;
+                    const movedTicket = draggedTicket;
+                    const sourceColumn = movedTicket.parentElement;
 
                     if (newStatus !== oldStatus) {
-                        // Update ticket in DOM with loading state
-                        draggedTicket.style.opacity = '0.7';
+                        // Optimistic UI update: move immediately, then sync server
+                        movedTicket.style.opacity = '0.7';
+
+                        const emptyMsg = targetColumn.querySelector('.column-empty');
+                        if (emptyMsg) {
+                            emptyMsg.remove();
+                        }
+
+                        movedTicket.setAttribute('data-status', newStatus);
+                        const movedSelect = movedTicket.querySelector('select[name="status"]');
+                        if (movedSelect) {
+                            movedSelect.value = newStatus;
+                        }
+                        targetColumn.appendChild(movedTicket);
+
+                        if (sourceColumn && sourceColumn.querySelectorAll('.ticket').length === 0) {
+                            sourceColumn.innerHTML = '<div class="column-empty">Aucun ticket</div>';
+                        }
+
+                        updateColumnCounters();
+                        updateTopKpis();
 
                         // Send update to server
                         fetch(`/moderation/tickets/${ticketId}/status-ajax`, {
@@ -844,45 +886,40 @@
                         })
                         .then(response => {
                             if (!response.ok) throw new Error('Failed to update');
-                            
-                            // Get old column
-                            const oldColumn = document.querySelector(`.column-content[data-status="${oldStatus}"]`);
-                            
-                            // Remove empty message from target column if exists
-                            const emptyMsg = targetColumn.querySelector('.column-empty');
-                            if (emptyMsg) {
-                                emptyMsg.remove();
-                            }
-                            
-                            // Move ticket to new column
-                            draggedTicket.setAttribute('data-status', newStatus);
-                            targetColumn.appendChild(draggedTicket);
-                            draggedTicket.style.opacity = '1';
-
-                                // Re-attach drag events to moved ticket
-                                attachDragEvents(draggedTicket);
-                            
-                            // Update old column - add empty message if no tickets
-                            if (oldColumn && oldColumn.querySelectorAll('.ticket').length === 0) {
-                                oldColumn.innerHTML = '<div class="column-empty">Aucun ticket</div>';
-                            }
-                            
-                            // Update column counters
-                            updateColumnCounters();
+                            movedTicket.style.opacity = '1';
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            draggedTicket.style.opacity = '1';
+                            // Rollback UI when server update fails
+                            movedTicket.setAttribute('data-status', oldStatus);
+                            const rollbackSelect = movedTicket.querySelector('select[name="status"]');
+                            if (rollbackSelect) {
+                                rollbackSelect.value = oldStatus;
+                            }
+                            if (sourceColumn) {
+                                const sourceEmpty = sourceColumn.querySelector('.column-empty');
+                                if (sourceEmpty) {
+                                    sourceEmpty.remove();
+                                }
+                                sourceColumn.appendChild(movedTicket);
+                            }
+
+                            if (targetColumn.querySelectorAll('.ticket').length === 0) {
+                                targetColumn.innerHTML = '<div class="column-empty">Aucun ticket</div>';
+                            }
+
+                            movedTicket.style.opacity = '1';
+                            updateColumnCounters();
+                            updateTopKpis();
                             alert('Erreur lors de la mise à jour du statut');
                         });
-                    } else {
-                        // Same status, just move it back to column
-                        targetColumn.appendChild(draggedTicket);
                     }
 
                     draggedTicket = null;
                 }
             });
         });
+
+        updateTopKpis();
     </script>
 {% endblock %}
