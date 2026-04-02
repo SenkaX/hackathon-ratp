@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\BusStop;
 use App\Entity\User;
 use App\Enum\SignalementMotif;
 use App\Enum\SignalementStatus;
@@ -9,11 +10,15 @@ use App\Repository\BusStopRepository;
 use App\Repository\MotifGraviteRepository;
 use App\Repository\SignalementRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/moderation/tickets')]
 final class TicketModerationController extends AbstractController
@@ -232,11 +237,160 @@ final class TicketModerationController extends AbstractController
         ]);
     }
 
+    #[Route('/map', name: 'app_moderation_tickets_map', methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
+    public function map(Request $request): Response
+    {
+        $selectedPeriod = in_array((string) $request->query->get('period', 'all'), ['7', '30', 'all'], true)
+            ? (string) $request->query->get('period', 'all')
+            : 'all';
+        $selectedMotif = SignalementMotif::tryFrom((string) $request->query->get('motif', ''));
+
+        return $this->render('moderation/map.html.twig', [
+            'motifs' => SignalementMotif::cases(),
+            'motifLabels' => array_reduce(
+                SignalementMotif::cases(),
+                static function (array $labels, SignalementMotif $motif): array {
+                    $labels[$motif->value] = $motif->label();
+
+                    return $labels;
+                },
+                []
+            ),
+            'filters' => [
+                'period' => $selectedPeriod,
+                'motif' => $selectedMotif?->value,
+            ],
+        ]);
+    }
+
+    #[Route('/map/data', name: 'app_moderation_tickets_map_data', methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
+    public function mapData(
+        Request $request,
+        BusStopRepository $busStopRepository,
+        SignalementRepository $signalementRepository,
+    ): Response {
+        $period = in_array((string) $request->query->get('period', 'all'), ['7', '30', 'all'], true)
+            ? (string) $request->query->get('period', 'all')
+            : 'all';
+        $motifFilter = SignalementMotif::tryFrom((string) $request->query->get('motif', ''));
+
+        $hotspotRows = $signalementRepository->getHotspotData([
+            'period' => $period,
+            'motif' => $motifFilter?->value,
+        ]);
+
+        $byStopId = [];
+        foreach ($hotspotRows as $row) {
+            $byStopId[$row['stop_id']] = $row;
+        }
+
+        $payload = [];
+        foreach ($busStopRepository->findBy([], ['label' => 'ASC']) as $stop) {
+            $data = $byStopId[$stop->getId()] ?? null;
+
+            $payload[] = [
+                'stop_id' => $stop->getId(),
+                'label' => $stop->getLabel(),
+                'latitude' => $stop->getLatitude(),
+                'longitude' => $stop->getLongitude(),
+                'score' => $data['score'] ?? 0,
+                'count' => $data['count'] ?? 0,
+                'signalements' => $data['signalements'] ?? [],
+            ];
+        }
+
+        return $this->json($payload);
+    }
+
+    #[Route('/qrcodes', name: 'app_moderation_qrcodes', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function qrcodes(BusStopRepository $busStopRepository): Response
+    {
+        $writer = new PngWriter();
+        $appUrl = rtrim((string) $this->getParameter('app.url'), '/');
+
+        $items = [];
+        foreach ($busStopRepository->findBy([], ['label' => 'ASC']) as $stop) {
+            $targetUrl = sprintf('%s/signalement?stop_id=%s', $appUrl, $stop->getId());
+            $result = $writer->write(new QrCode(data: $targetUrl, size: 300, margin: 10));
+
+            $items[] = [
+                'stop' => $stop,
+                'target_url' => $targetUrl,
+                'image_base64' => base64_encode($result->getString()),
+            ];
+        }
+
+        return $this->render('moderation/qrcodes.html.twig', [
+            'items' => $items,
+        ]);
+    }
+
+    #[Route('/qrcodes/{id}/download', name: 'app_moderation_qrcode_download', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function qrcodeDownload(BusStop $stop): Response
+    {
+        $targetUrl = sprintf('%s/signalement?stop_id=%s', rtrim((string) $this->getParameter('app.url'), '/'), $stop->getId());
+        $result = (new PngWriter())->write(new QrCode(data: $targetUrl, size: 1000, margin: 20));
+
+        $response = new Response($result->getString());
+        $response->headers->set('Content-Type', 'image/png');
+        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, sprintf('qrcode-%s.png', $stop->getId())));
+
+        return $response;
+    }
+
+    #[Route('/mine', name: 'app_moderation_tickets_mine', methods: ['GET'])]
+    #[IsGranted('ROLE_MANAGER')]
+    public function myTickets(
+        Request $request,
+        SignalementRepository $signalementRepository,
+        BusStopRepository $busStopRepository,
+    ): Response {
+        $assignedRole = $this->resolveAssignedRoleForCurrentUser();
+
+        return $this->renderTicketsBoard(
+            $request,
+            $signalementRepository,
+            $busStopRepository,
+            $assignedRole,
+            'my_tickets',
+            'Mes tickets',
+            sprintf('Tickets assignes au role %s selon la gravite des signalements.', $assignedRole === User::ROLE_RH ? 'RH' : 'Manager'),
+            'app_moderation_tickets_mine',
+        );
+    }
+
     #[Route('', name: 'app_moderation_tickets', methods: ['GET'])]
     public function index(
         Request $request,
         SignalementRepository $signalementRepository,
         BusStopRepository $busStopRepository,
+    ): Response
+    {
+        return $this->renderTicketsBoard(
+            $request,
+            $signalementRepository,
+            $busStopRepository,
+            null,
+            'kanban',
+            'Tableau de bord Moderation',
+            'Vue Kanban - Gestion centralisee des incidents',
+            'app_moderation_tickets',
+        );
+    }
+
+    private function renderTicketsBoard(
+        Request $request,
+        SignalementRepository $signalementRepository,
+        BusStopRepository $busStopRepository,
+        ?string $assignedRole,
+        string $activeTab,
+        string $pageTitle,
+        string $pageSubtitle,
+        string $resetRoute,
     ): Response
     {
         $statusFilter = SignalementStatus::tryFrom((string) $request->query->get('status', ''));
@@ -259,6 +413,10 @@ final class TicketModerationController extends AbstractController
 
         if ($stopFilter !== '') {
             $qb->andWhere('stop.id = :stopId')->setParameter('stopId', $stopFilter);
+        }
+
+        if ($assignedRole !== null) {
+            $qb->andWhere('ticket.assignedRole = :assignedRole')->setParameter('assignedRole', $assignedRole);
         }
 
         $tickets = $qb->getQuery()->getResult();
@@ -291,6 +449,11 @@ final class TicketModerationController extends AbstractController
             'statuses' => SignalementStatus::moderationCases(),
             'motifs' => SignalementMotif::cases(),
             'stops' => $busStopRepository->findBy([], ['label' => 'ASC']),
+            'activeTab' => $activeTab,
+            'pageTitle' => $pageTitle,
+            'pageSubtitle' => $pageSubtitle,
+            'resetRoute' => $resetRoute,
+            'assignedRole' => $assignedRole,
             'filters' => [
                 'status' => $statusFilter?->value,
                 'motif' => $motifFilter?->value,
@@ -323,7 +486,7 @@ final class TicketModerationController extends AbstractController
         if ($status === null || !in_array($status, SignalementStatus::moderationCases(), true)) {
             $this->addFlash('error', 'Statut invalide.');
 
-            return $this->redirectToRoute('app_moderation_tickets');
+            return $this->redirectToRoute($this->resolveRedirectRoute($request));
         }
 
         $reviewNote = trim((string) $request->request->get('review_note', ''));
@@ -355,7 +518,7 @@ final class TicketModerationController extends AbstractController
 
         $this->addFlash('success', 'Statut mis a jour.');
 
-        return $this->redirectToRoute('app_moderation_tickets');
+        return $this->redirectToRoute($this->resolveRedirectRoute($request));
     }
 
     #[Route('/{id}/status-ajax', name: 'app_moderation_ticket_status_update_ajax', methods: ['POST'], requirements: ['id' => '[0-9a-fA-F\-]{36}'])]
@@ -411,5 +574,23 @@ final class TicketModerationController extends AbstractController
         $score = ($gravite * 15) + intdiv($confianceScore, 4);
 
         return max(0, min(100, $score));
+    }
+
+    private function resolveAssignedRoleForCurrentUser(): string
+    {
+        if ($this->isGranted(User::ROLE_RH)) {
+            return User::ROLE_RH;
+        }
+
+        return User::ROLE_MANAGER;
+    }
+
+    private function resolveRedirectRoute(Request $request): string
+    {
+        $route = (string) $request->request->get('_redirect_route', 'app_moderation_tickets');
+
+        return in_array($route, ['app_moderation_tickets', 'app_moderation_tickets_mine'], true)
+            ? $route
+            : 'app_moderation_tickets';
     }
 }

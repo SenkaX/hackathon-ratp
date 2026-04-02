@@ -50,6 +50,9 @@ class Signalement
     #[ORM\Column(options: ['default' => 100])]
     private int $confianceScore = 100;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $assignedRole = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?User $reviewedBy = null;
@@ -205,6 +208,18 @@ class Signalement
     public function setConfianceScore(int $confianceScore): static
     {
         $this->confianceScore = $confianceScore;
+
+        return $this;
+    }
+
+    public function getAssignedRole(): ?string
+    {
+        return $this->assignedRole;
+    }
+
+    public function setAssignedRole(?string $assignedRole): static
+    {
+        $this->assignedRole = $assignedRole;
 
         return $this;
     }

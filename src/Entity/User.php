@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_RH = 'ROLE_RH';
+    public const ROLE_MANAGER = 'ROLE_MANAGER';
     public const ROLE_MODERATOR = 'ROLE_MODERATOR';
 
     #[ORM\Id]
