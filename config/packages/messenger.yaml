@@ -1,0 +1,23 @@
+framework:
+    messenger:
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: "%env(MESSENGER_TRANSPORT_DSN)%"
+                options:
+                    queue_name: signalement_suggestion
+            failed:
+                dsn: "doctrine://default"
+                options:
+                    queue_name: failed
+
+        routing:
+            App\Message\GenerateSignalementSuggestionMessage: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: "in-memory://"
+                failed: "in-memory://"

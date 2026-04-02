@@ -60,6 +60,9 @@ class Signalement
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $reviewNote = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $suggestion = null;
+
     #[ORM\Column(length: 64, unique: true)]
     private ?string $accessToken = null;
 
@@ -238,6 +241,18 @@ class Signalement
     public function setReviewNote(?string $reviewNote): static
     {
         $this->reviewNote = $reviewNote;
+
+        return $this;
+    }
+
+    public function getSuggestion(): ?string
+    {
+        return $this->suggestion;
+    }
+
+    public function setSuggestion(?string $suggestion): static
+    {
+        $this->suggestion = $suggestion;
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Signalement;
 use App\Enum\SignalementStatus;
 use App\Form\SignalementType;
+use App\Message\GenerateSignalementSuggestionMessage;
 use App\Repository\BusStopRepository;
 use App\Repository\MotifGraviteRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -26,6 +28,7 @@ final class SignalementController extends AbstractController
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
         HttpClientInterface $client,
+        MessageBusInterface $messageBus,
     ): Response {
         $signalement = new Signalement();
         $signalement->setIncidentDate(new \DateTimeImmutable());
@@ -54,6 +57,15 @@ final class SignalementController extends AbstractController
 
             $entityManager->persist($signalement);
             $entityManager->flush();
+
+            try {
+                $messageBus->dispatch(new GenerateSignalementSuggestionMessage($signalement->getId()));
+            } catch (\Throwable $exception) {
+                $logger->error('Failed to dispatch async suggestion generation.', [
+                    'signalement_id' => $signalement->getId(),
+                    'exception' => $exception,
+                ]);
+            }
 
             $ticketPath = $this->generateUrl(
                 'app_ticket_show',

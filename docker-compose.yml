@@ -18,6 +18,28 @@ services:
             APP_ENV: dev
             APP_DEBUG: "true"
 
+    worker:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: hackathon_ratp_worker
+        working_dir: /app
+        command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=256M", "--sleep=1", "--no-interaction"]
+        restart: unless-stopped
+        volumes:
+            - ./:/app
+            - /app/var
+        networks:
+            - hackathon_network
+        env_file:
+            - .env
+            - .env.local
+        environment:
+            APP_ENV: dev
+            APP_DEBUG: "true"
+        depends_on:
+            - php
+
     nginx:
         image: nginx:alpine
         container_name: hackathon_ratp_nginx

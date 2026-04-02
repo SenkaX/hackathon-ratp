@@ -23,6 +23,15 @@
 
             <strong>Details</strong>
             <span>{{ signalement.details|nl2br }}</span>
+
+            <strong>Suggestion IA</strong>
+            <span>
+                {% if signalement.suggestion %}
+                    {{ signalement.suggestion|nl2br }}
+                {% else %}
+                    Suggestion en cours de generation.
+                {% endif %}
+            </span>
         </div>
     </section>
 {% endblock %}

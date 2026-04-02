@@ -86,6 +86,158 @@ final class TicketModerationController extends AbstractController
         ]);
     }
 
+    #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
+    public function dashboard(SignalementRepository $signalementRepository): Response
+    {
+        $tickets = $signalementRepository->createQueryBuilder('ticket')
+            ->leftJoin('ticket.stop', 'stop')
+            ->addSelect('stop')
+            ->orderBy('ticket.submittedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $total = count($tickets);
+        $pending = 0;
+        $validated = 0;
+        $dismissed = 0;
+        $legal = 0;
+        $resolved = 0;
+
+        $categoryCounts = [];
+        $statusCounts = [
+            'En attente' => 0,
+            'En cours' => 0,
+            'Valide' => 0,
+            'Sans suite' => 0,
+            'Escalade juridique' => 0,
+            'Resolu' => 0,
+        ];
+
+        foreach ($tickets as $ticket) {
+            $status = $ticket->getStatus();
+
+            if ($status === SignalementStatus::EnAttenteValidation) {
+                ++$pending;
+                ++$statusCounts['En attente'];
+            } elseif ($status === SignalementStatus::EnCours) {
+                ++$statusCounts['En cours'];
+            } elseif ($status === SignalementStatus::Valide) {
+                ++$validated;
+                ++$statusCounts['Valide'];
+            } elseif ($status === SignalementStatus::SansSuite) {
+                ++$dismissed;
+                ++$statusCounts['Sans suite'];
+            } elseif ($status === SignalementStatus::EscaladeJuridique) {
+                ++$legal;
+                ++$statusCounts['Escalade juridique'];
+            } elseif ($status === SignalementStatus::Resolu) {
+                ++$resolved;
+                ++$statusCounts['Resolu'];
+            }
+
+            $motifLabel = $ticket->getMotif()?->label() ?? 'Non classe';
+            $categoryCounts[$motifLabel] = ($categoryCounts[$motifLabel] ?? 0) + 1;
+        }
+
+        arsort($categoryCounts);
+        $topCategories = array_slice($categoryCounts, 0, 6, true);
+        $maxCategory = max(1, ...array_values($topCategories ?: ['default' => 1]));
+
+        $categoryBars = [];
+        foreach ($topCategories as $label => $count) {
+            $categoryBars[] = [
+                'label' => $label,
+                // Normalized value to keep chart bars visually bounded.
+                'value' => (int) max(1, ceil(($count / $maxCategory) * 6)),
+            ];
+        }
+
+        $statusColors = [
+            'En attente' => '#3b82f6',
+            'En cours' => '#8b5cf6',
+            'Valide' => '#ec4899',
+            'Sans suite' => '#10b981',
+            'Escalade juridique' => '#ef4444',
+            'Resolu' => '#f59e0b',
+        ];
+
+        $statusDistribution = [];
+        foreach ($statusCounts as $label => $count) {
+            $percentage = $total > 0 ? (int) round(($count / $total) * 100) : 0;
+            $statusDistribution[] = [
+                'label' => $label,
+                'value' => $percentage,
+                'color' => $statusColors[$label],
+            ];
+        }
+
+        $recentTickets = [];
+        foreach (array_slice($tickets, 0, 6) as $ticket) {
+            $priorityScore = $ticket->getPrioriteScore();
+            $priorityLabel = $priorityScore >= 75 ? 'Critique' : ($priorityScore >= 50 ? 'Haute' : ($priorityScore >= 25 ? 'Moyenne' : 'Faible'));
+            $priorityColor = $priorityScore >= 75 ? '#dc2626' : ($priorityScore >= 50 ? '#ea580c' : ($priorityScore >= 25 ? '#2563eb' : '#16a34a'));
+
+            $recentTickets[] = [
+                'id' => $ticket->getId(),
+                'priority' => $priorityLabel,
+                'priorityColor' => $priorityColor,
+                'title' => $ticket->getMotif()?->label() ?? 'Incident',
+                'tags' => array_values(array_filter([
+                    $ticket->getMotif()?->value,
+                    $ticket->getStatus()->label(),
+                ])),
+                'description' => mb_strimwidth((string) $ticket->getDetails(), 0, 180, '...'),
+                'location' => $ticket->getStop()?->getLabel() ?? 'Arret inconnu',
+                'source' => 'Formulaire signalement',
+                'date' => $ticket->getSubmittedAt()->format('d/m/Y H:i'),
+                'confidence' => $ticket->getConfianceScore(),
+                'assigned' => $ticket->getReviewedBy()?->getEmail() ?? 'Non assigne',
+            ];
+        }
+
+        $hotspotCounts = [];
+        $thresholdDate = new \DateTimeImmutable('-30 days');
+        foreach ($tickets as $ticket) {
+            $submittedAt = $ticket->getSubmittedAt();
+            if ($submittedAt < $thresholdDate) {
+                continue;
+            }
+
+            $stopLabel = $ticket->getStop()?->getLabel() ?? 'Arret inconnu';
+            $hotspotCounts[$stopLabel] = ($hotspotCounts[$stopLabel] ?? 0) + 1;
+        }
+
+        arsort($hotspotCounts);
+        $hotspots = [];
+        foreach (array_slice($hotspotCounts, 0, 3, true) as $place => $count) {
+            $level = $count >= 8 ? 'Haute' : ($count >= 4 ? 'Moyenne' : 'Faible');
+            $hotspots[] = [
+                'place' => $place,
+                'level' => $level,
+                'window' => '30 derniers jours',
+                'incidents' => $count,
+            ];
+        }
+
+        $kpis = [
+            ['label' => 'Total tickets', 'value' => $total, 'color' => '#2f4c99'],
+            ['label' => 'En attente', 'value' => $pending, 'color' => '#3b82f6'],
+            ['label' => 'En cours', 'value' => $statusCounts['En cours'], 'color' => '#8b5cf6'],
+            ['label' => 'Valides', 'value' => $validated, 'color' => '#ec4899'],
+            ['label' => 'Sans suite', 'value' => $dismissed, 'color' => '#10b981'],
+            ['label' => 'Escalade juridique', 'value' => $legal, 'color' => '#ef4444'],
+        ];
+
+        return $this->render('moderation/dahsboard.html.twig', [
+            'kpis' => $kpis,
+            'categoryBars' => $categoryBars,
+            'statusDistribution' => $statusDistribution,
+            'recentTickets' => $recentTickets,
+            'hotspots' => $hotspots,
+            'resolved' => $resolved,
+        ]);
+    }
+
     #[Route('/{id}/status', name: 'app_moderation_ticket_status_update', methods: ['POST'], requirements: ['id' => '[0-9a-fA-F\-]{36}'])]
     public function updateStatus(
         string $id,
