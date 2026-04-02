@@ -18,6 +18,220 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/moderation/tickets')]
 final class TicketModerationController extends AbstractController
 {
+    #[Route('/projects', name: 'app_moderation_projects', methods: ['GET'])]
+    public function projects(): Response
+    {
+        $projects = [
+            [
+                'name' => 'Station Chatelet',
+                'subtitle' => 'Chatelet',
+                'description' => 'Gestion des incidents pour la station Chatelet',
+                'lines' => ['21', '38', '47', '58', '69', '70', '+4'],
+                'total' => 4,
+                'pending' => 1,
+                'inProgress' => 1,
+                'critical' => 1,
+                'iconColor' => '#3b82f6',
+            ],
+            [
+                'name' => 'Station Gare du Nord',
+                'subtitle' => 'Gare du Nord',
+                'description' => 'Gestion des incidents pour la station Gare du Nord',
+                'lines' => ['26', '31', '35', '38', '39', '42', '+4'],
+                'total' => 3,
+                'pending' => 0,
+                'inProgress' => 1,
+                'critical' => 0,
+                'iconColor' => '#3b82f6',
+            ],
+            [
+                'name' => 'Station République',
+                'subtitle' => 'Republique',
+                'description' => 'Gestion des incidents pour la station Republique',
+                'lines' => ['20', '56', '65', '75'],
+                'total' => 3,
+                'pending' => 1,
+                'inProgress' => 1,
+                'critical' => 0,
+                'iconColor' => '#3b82f6',
+            ],
+        ];
+
+        return $this->render('moderation/projects.html.twig', [
+            'projects' => $projects,
+            'overview' => [
+                ['label' => 'Stations suivies', 'value' => 3],
+                ['label' => 'Lignes couvertes', 'value' => 18],
+                ['label' => 'Tickets ouverts', 'value' => 8],
+            ],
+        ]);
+    }
+
+    #[Route('/users', name: 'app_moderation_users', methods: ['GET'])]
+    public function users(): Response
+    {
+        $users = [
+            [
+                'name' => 'Marie Dupont',
+                'role' => 'Admin',
+                'roleColor' => '#6366f1',
+                'email' => 'marie.dupont@ratp.fr',
+                'description' => 'Acces complet - Validation et decisions strategiques',
+                'assigned' => 2,
+                'created' => 0,
+                'pending' => 0,
+                'inProgress' => 0,
+                'systemNote' => null,
+            ],
+            [
+                'name' => 'Thomas Martin',
+                'role' => 'RH',
+                'roleColor' => '#6366f1',
+                'email' => 'thomas.martin@ratp.fr',
+                'description' => 'Gestion des incidents RH et comportements',
+                'assigned' => 3,
+                'created' => 0,
+                'pending' => 1,
+                'inProgress' => 1,
+                'systemNote' => null,
+            ],
+            [
+                'name' => 'Sophie Bernard',
+                'role' => 'Manager',
+                'roleColor' => '#6366f1',
+                'email' => 'sophie.bernard@ratp.fr',
+                'description' => 'Supervision des operations et coordination avec les equipes terrain',
+                'assigned' => 3,
+                'created' => 0,
+                'pending' => 1,
+                'inProgress' => 1,
+                'systemNote' => null       
+            ],
+        ];
+
+        return $this->render('moderation/users.html.twig', [
+            'users' => $users,
+        ]);
+    }
+
+    #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
+    public function dashboard(): Response
+    {
+        $kpis = [
+            ['label' => 'Total Tickets', 'value' => 10, 'color' => '#3b82f6', 'icon' => 'pulse'],
+            ['label' => 'En attente validation', 'value' => 2, 'color' => '#eab308', 'icon' => 'clock'],
+            ['label' => 'En cours', 'value' => 3, 'color' => '#a855f7', 'icon' => 'trend'],
+            ['label' => 'Resolus', 'value' => 1, 'color' => '#22c55e', 'icon' => 'check'],
+            ['label' => 'Tickets critiques', 'value' => 1, 'color' => '#ef4444', 'icon' => 'alert'],
+            ['label' => 'Indice confiance moy.', 'value' => '79%', 'color' => '#6366f1', 'icon' => 'shield'],
+        ];
+
+        $categoryBars = [
+            ['label' => 'Comportement suspect', 'value' => 2],
+            ['label' => 'Bagarre/Agression', 'value' => 1],
+            ['label' => 'Plainte client', 'value' => 2],
+            ['label' => 'Accident', 'value' => 1],
+            ['label' => 'Retard', 'value' => 1],
+            ['label' => 'Objet perdu', 'value' => 1],
+            ['label' => 'Arret saute', 'value' => 1],
+            ['label' => 'Autre', 'value' => 2],
+        ];
+
+        $statusDistribution = [
+            ['label' => 'En attente de validation', 'value' => 20, 'color' => '#3b82f6'],
+            ['label' => 'Valide', 'value' => 20, 'color' => '#8b5cf6'],
+            ['label' => 'En cours', 'value' => 30, 'color' => '#ec4899'],
+            ['label' => 'Classe sans suite', 'value' => 10, 'color' => '#10b981'],
+            ['label' => 'Resolu', 'value' => 10, 'color' => '#ef4444'],
+            ['label' => 'Juridique', 'value' => 10, 'color' => '#f59e0b'],
+        ];
+
+        $recentTickets = [
+            [
+                'id' => 'TICK-009',
+                'priority' => 'Moyenne',
+                'priorityColor' => '#3b82f6',
+                'title' => 'Client mecontent - Delai de reponse',
+                'tags' => ['Plainte client', 'Ligne 72'],
+                'description' => "Plainte d'un client concernant l'absence de reponse a sa precedente reclamation.",
+                'location' => 'Chatelet',
+                'source' => 'Email',
+                'date' => '30 mars 2026 10:00',
+                'confidence' => 75,
+                'assigned' => 'Assigne',
+            ],
+            [
+                'id' => 'TICK-001',
+                'priority' => 'Haute',
+                'priorityColor' => '#f97316',
+                'title' => 'Retard repetitif ligne 38 - Chauffeur Jean D.',
+                'tags' => ['Comportement suspect', 'Ligne 38'],
+                'description' => "Le chauffeur Jean D. a accumule 5 retards significatifs sur les 2 dernieres semaines.",
+                'location' => 'Chatelet - Porte de Versailles',
+                'source' => 'Agent infiltre',
+                'date' => '30 mars 2026 08:15',
+                'confidence' => 85,
+                'assigned' => 'Assigne',
+            ],
+        ];
+
+        $hotspots = [
+            ['place' => 'Republique - Marche du vendredi', 'window' => 'Vendredi 7h-10h', 'incidents' => 12, 'level' => 'Haute'],
+            ['place' => 'Chatelet - Rue de Rivoli', 'window' => 'Lundi-Vendredi 17h-19h', 'incidents' => 8, 'level' => 'Moyenne'],
+            ['place' => 'Gare du Nord - Boulevard Magenta', 'window' => 'Quotidien 8h-9h', 'incidents' => 6, 'level' => 'Moyenne'],
+            ['place' => 'Chatelet - Porte de Versailles', 'window' => 'Mardi-Jeudi 7h30-9h', 'incidents' => 5, 'level' => 'Faible'],
+        ];
+
+        return $this->render('moderation/dashboard.html.twig', [
+            'kpis' => $kpis,
+            'categoryBars' => $categoryBars,
+            'statusDistribution' => $statusDistribution,
+            'recentTickets' => $recentTickets,
+            'hotspots' => $hotspots,
+        ]);
+    }
+
+    #[Route('/settings', name: 'app_moderation_settings', methods: ['GET'])]
+    public function settings(): Response
+    {
+        return $this->render('moderation/settings.html.twig', [
+            'notificationRules' => [
+                ['label' => 'Tickets critiques', 'enabled' => true],
+                ['label' => 'Nouveaux tickets IA', 'enabled' => true],
+                ['label' => 'Tickets assignes', 'enabled' => true],
+                ['label' => 'Points chauds detectes', 'enabled' => false],
+            ],
+            'securityRules' => [
+                ['label' => 'Anonymisation automatique', 'enabled' => true],
+                ['label' => 'Logs d\'audit', 'enabled' => true],
+                ['label' => 'Validation humaine obligatoire', 'enabled' => true, 'disabled' => true],
+            ],
+            'sources' => [
+                ['name' => 'Cameras bus', 'status' => 'Actif'],
+                ['name' => 'QR Codes', 'status' => 'Actif'],
+                ['name' => 'Reseaux sociaux (Scraping)', 'status' => 'Test'],
+            ],
+            'automationRules' => [
+                ['label' => 'Creation auto de tickets', 'enabled' => true],
+                ['label' => 'Resumes IA', 'enabled' => true],
+                ['label' => 'Fusion automatique des doublons', 'enabled' => true],
+                ['label' => 'Detection points chauds', 'enabled' => true],
+                ['label' => 'Indice de confiance', 'enabled' => true],
+            ],
+            'confidence' => [
+                'high' => 80,
+                'medium' => 60,
+                'penalty' => 10,
+            ],
+            'systemInfo' => [
+                'version' => 'v1.0.0 (Prototype)',
+                'environment' => 'Developpement',
+                'processed' => 10,
+                'uptime' => '99.9%',
+            ],
+        ]);
+    }
+
     #[Route('', name: 'app_moderation_tickets', methods: ['GET'])]
     public function index(
         Request $request,
@@ -83,158 +297,6 @@ final class TicketModerationController extends AbstractController
                 'stop' => $stopFilter,
             ],
             'kpis' => $kpis,
-        ]);
-    }
-
-    #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
-    public function dashboard(SignalementRepository $signalementRepository): Response
-    {
-        $tickets = $signalementRepository->createQueryBuilder('ticket')
-            ->leftJoin('ticket.stop', 'stop')
-            ->addSelect('stop')
-            ->orderBy('ticket.submittedAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        $total = count($tickets);
-        $pending = 0;
-        $validated = 0;
-        $dismissed = 0;
-        $legal = 0;
-        $resolved = 0;
-
-        $categoryCounts = [];
-        $statusCounts = [
-            'En attente' => 0,
-            'En cours' => 0,
-            'Valide' => 0,
-            'Sans suite' => 0,
-            'Escalade juridique' => 0,
-            'Resolu' => 0,
-        ];
-
-        foreach ($tickets as $ticket) {
-            $status = $ticket->getStatus();
-
-            if ($status === SignalementStatus::EnAttenteValidation) {
-                ++$pending;
-                ++$statusCounts['En attente'];
-            } elseif ($status === SignalementStatus::EnCours) {
-                ++$statusCounts['En cours'];
-            } elseif ($status === SignalementStatus::Valide) {
-                ++$validated;
-                ++$statusCounts['Valide'];
-            } elseif ($status === SignalementStatus::SansSuite) {
-                ++$dismissed;
-                ++$statusCounts['Sans suite'];
-            } elseif ($status === SignalementStatus::EscaladeJuridique) {
-                ++$legal;
-                ++$statusCounts['Escalade juridique'];
-            } elseif ($status === SignalementStatus::Resolu) {
-                ++$resolved;
-                ++$statusCounts['Resolu'];
-            }
-
-            $motifLabel = $ticket->getMotif()?->label() ?? 'Non classe';
-            $categoryCounts[$motifLabel] = ($categoryCounts[$motifLabel] ?? 0) + 1;
-        }
-
-        arsort($categoryCounts);
-        $topCategories = array_slice($categoryCounts, 0, 6, true);
-        $maxCategory = max(1, ...array_values($topCategories ?: ['default' => 1]));
-
-        $categoryBars = [];
-        foreach ($topCategories as $label => $count) {
-            $categoryBars[] = [
-                'label' => $label,
-                // Normalized value to keep chart bars visually bounded.
-                'value' => (int) max(1, ceil(($count / $maxCategory) * 6)),
-            ];
-        }
-
-        $statusColors = [
-            'En attente' => '#3b82f6',
-            'En cours' => '#8b5cf6',
-            'Valide' => '#ec4899',
-            'Sans suite' => '#10b981',
-            'Escalade juridique' => '#ef4444',
-            'Resolu' => '#f59e0b',
-        ];
-
-        $statusDistribution = [];
-        foreach ($statusCounts as $label => $count) {
-            $percentage = $total > 0 ? (int) round(($count / $total) * 100) : 0;
-            $statusDistribution[] = [
-                'label' => $label,
-                'value' => $percentage,
-                'color' => $statusColors[$label],
-            ];
-        }
-
-        $recentTickets = [];
-        foreach (array_slice($tickets, 0, 6) as $ticket) {
-            $priorityScore = $ticket->getPrioriteScore();
-            $priorityLabel = $priorityScore >= 75 ? 'Critique' : ($priorityScore >= 50 ? 'Haute' : ($priorityScore >= 25 ? 'Moyenne' : 'Faible'));
-            $priorityColor = $priorityScore >= 75 ? '#dc2626' : ($priorityScore >= 50 ? '#ea580c' : ($priorityScore >= 25 ? '#2563eb' : '#16a34a'));
-
-            $recentTickets[] = [
-                'id' => $ticket->getId(),
-                'priority' => $priorityLabel,
-                'priorityColor' => $priorityColor,
-                'title' => $ticket->getMotif()?->label() ?? 'Incident',
-                'tags' => array_values(array_filter([
-                    $ticket->getMotif()?->value,
-                    $ticket->getStatus()->label(),
-                ])),
-                'description' => mb_strimwidth((string) $ticket->getDetails(), 0, 180, '...'),
-                'location' => $ticket->getStop()?->getLabel() ?? 'Arret inconnu',
-                'source' => 'Formulaire signalement',
-                'date' => $ticket->getSubmittedAt()->format('d/m/Y H:i'),
-                'confidence' => $ticket->getConfianceScore(),
-                'assigned' => $ticket->getReviewedBy()?->getEmail() ?? 'Non assigne',
-            ];
-        }
-
-        $hotspotCounts = [];
-        $thresholdDate = new \DateTimeImmutable('-30 days');
-        foreach ($tickets as $ticket) {
-            $submittedAt = $ticket->getSubmittedAt();
-            if ($submittedAt < $thresholdDate) {
-                continue;
-            }
-
-            $stopLabel = $ticket->getStop()?->getLabel() ?? 'Arret inconnu';
-            $hotspotCounts[$stopLabel] = ($hotspotCounts[$stopLabel] ?? 0) + 1;
-        }
-
-        arsort($hotspotCounts);
-        $hotspots = [];
-        foreach (array_slice($hotspotCounts, 0, 3, true) as $place => $count) {
-            $level = $count >= 8 ? 'Haute' : ($count >= 4 ? 'Moyenne' : 'Faible');
-            $hotspots[] = [
-                'place' => $place,
-                'level' => $level,
-                'window' => '30 derniers jours',
-                'incidents' => $count,
-            ];
-        }
-
-        $kpis = [
-            ['label' => 'Total tickets', 'value' => $total, 'color' => '#2f4c99'],
-            ['label' => 'En attente', 'value' => $pending, 'color' => '#3b82f6'],
-            ['label' => 'En cours', 'value' => $statusCounts['En cours'], 'color' => '#8b5cf6'],
-            ['label' => 'Valides', 'value' => $validated, 'color' => '#ec4899'],
-            ['label' => 'Sans suite', 'value' => $dismissed, 'color' => '#10b981'],
-            ['label' => 'Escalade juridique', 'value' => $legal, 'color' => '#ef4444'],
-        ];
-
-        return $this->render('moderation/dahsboard.html.twig', [
-            'kpis' => $kpis,
-            'categoryBars' => $categoryBars,
-            'statusDistribution' => $statusDistribution,
-            'recentTickets' => $recentTickets,
-            'hotspots' => $hotspots,
-            'resolved' => $resolved,
         ]);
     }
 

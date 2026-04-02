@@ -12,6 +12,8 @@
             padding: 0;
             min-height: 100vh;
             border-radius: 0;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
         }
 
         .dashboard-layout {
@@ -571,23 +573,7 @@
 
     <section class="dashboard-shell">
         <div class="dashboard-layout">
-            <aside class="sidebar">
-                <div class="sidebar-brand">
-                    <div class="brand-logo">R</div>
-                    <div class="brand-text">
-                        <strong>RATP Bus</strong>
-                        <span>Gestion des incidents</span>
-                    </div>
-                </div>
-
-                <nav class="sidebar-nav">
-                    <a href="{{ path('app_moderation_dashboard') }}" class="sidebar-link">Tableau de bord</a>
-                    <a href="{{ path('app_moderation_tickets') }}" class="sidebar-link active">Vue Kanban</a>
-                    <a href="#" class="sidebar-link">Projets</a>
-                    <a href="#" class="sidebar-link">Utilisateurs</a>
-                    <a href="#" class="sidebar-link">Parametres</a>
-                </nav>
-            </aside>
+            {% include 'moderation/_sidebar.html.twig' with { active: 'kanban' } %}
 
             <div class="sidebar-content">
                 <header class="dashboard-head">
