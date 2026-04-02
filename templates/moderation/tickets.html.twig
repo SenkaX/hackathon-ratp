@@ -478,6 +478,27 @@
             gap: 4px;
         }
 
+        .ai-suggestion {
+            margin-top: 4px;
+            padding: 10px;
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            color: #1e3a8a;
+            line-height: 1.45;
+        }
+
+        .ai-suggestion-title {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.72rem;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #1d4ed8;
+        }
+
         .ticket-actions {
             display: grid;
             gap: 10px;
@@ -714,10 +735,16 @@
 
                                         <div class="ticket-meta">
                                             <span>📍 {{ ticket.stop ? ticket.stop.label : 'Aucun arrêt' }}</span>
-                                            <span>👤 Agent infiltré</span>
                                             <span>🕐 {{ ticket.submittedAt|date('d/m/Y H:i') }}</span>
-                                            <span>🛡️ Confiance: {{ ticket.confianceScore }}%</span>
+                                            {# <span>🛡️ Confiance: {{ ticket.confianceScore }}%</span> #}
                                         </div>
+
+                                        {% if ticket.suggestion is not empty %}
+                                            <div class="ai-suggestion">
+                                                <span class="ai-suggestion-title">Suggestion IA</span>
+                                                <div>{{ ticket.suggestion|nl2br }}</div>
+                                            </div>
+                                        {% endif %}
 
                                         <form class="ticket-actions" method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
