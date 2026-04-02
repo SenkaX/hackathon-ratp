@@ -594,13 +594,13 @@
 
     <section class="dashboard-shell">
         <div class="dashboard-layout">
-            {% include 'moderation/_sidebar.html.twig' with { active: 'kanban' } %}
+            {% include 'moderation/_sidebar.html.twig' with { active: activeTab|default('kanban') } %}
 
             <div class="sidebar-content">
                 <header class="dashboard-head">
                     <div>
-                        <h1>Tableau de bord Modération</h1>
-                        <p>Vue Kanban - Gestion centralisée des incidents</p>
+                        <h1>{{ pageTitle|default('Tableau de bord Moderation') }}</h1>
+                        <p>{{ pageSubtitle|default('Vue Kanban - Gestion centralisee des incidents') }}</p>
                     </div>
                     <a href="{{ path('app_logout') }}" class="logout-btn">Se déconnecter</a>
                 </header>
@@ -669,7 +669,7 @@
                         <div class="filter-group filter-group-actions">
                             <div class="filter-actions">
                                 <button type="submit" class="btn-filter">Filtrer</button>
-                                <a href="{{ path('app_moderation_tickets') }}" class="btn-reset">Réinitialiser</a>
+                                <a href="{{ path(resetRoute|default('app_moderation_tickets')) }}" class="btn-reset">Réinitialiser</a>
                             </div>
                         </div>
                     </div>
@@ -748,6 +748,7 @@
 
                                         <form class="ticket-actions" method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
+                                            <input type="hidden" name="_redirect_route" value="{{ resetRoute|default('app_moderation_tickets') }}">
 
                                             <select name="status">
                                                 {% for status in statuses %}

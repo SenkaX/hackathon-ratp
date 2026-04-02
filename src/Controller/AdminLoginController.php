@@ -13,10 +13,10 @@ final class AdminLoginController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('app_admin_qrcodes');
+            return $this->redirectToRoute('app_moderation_qrcodes');
         }
 
-        if ($this->isGranted('ROLE_MODERATOR')) {
+        if ($this->isGranted('ROLE_MANAGER')) {
             return $this->redirectToRoute('app_moderation_tickets');
         }
 

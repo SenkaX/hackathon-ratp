@@ -76,9 +76,9 @@ final readonly class SignalementSuggestionGenerator
             ],
             'stop_history' => $stopHistory,
             'roles_context' => [
-                'ROLE_MODERATOR' => 'qualification initiale et tri des tickets',
-                'ROLE_ADMIN' => 'arbitrage, validation finale, escalade transverse',
-                'RH' => 'mesures disciplinaires et suivi conducteur',
+                'ROLE_MANAGER' => 'qualification initiale et suivi operationnel terrain',
+                'ROLE_RH' => 'mesures disciplinaires et suivi conducteur',
+                'ROLE_ADMIN' => 'arbitrage, validation finale, escalade transverse et pilotage QR codes',
                 'CHEF_EQUIPE' => 'actions operationnelles terrain et accompagnement',
                 'JURIDIQUE' => 'dossiers litigieux et faits graves',
             ],

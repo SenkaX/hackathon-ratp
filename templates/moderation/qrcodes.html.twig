@@ -1,0 +1,229 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}QR codes des arrets{% endblock %}
+
+{% block body %}
+    <style>
+        .qr-shell {
+            background: linear-gradient(145deg, #f6f8fc 0%, #eef2f9 100%);
+            min-height: 100vh;
+            font-family: "Segoe UI", "Helvetica Neue", Helvetica, sans-serif;
+            color: #1f2937;
+        }
+
+        .qr-layout {
+            display: grid;
+            grid-template-columns: 256px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-text strong {
+            display: block;
+            color: #111827;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 6px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 1.02rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background: #e2e8f0;
+            color: #1e3a8a;
+        }
+
+        .sidebar-link.active {
+            background: #e0e7ff;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .qr-main {
+            min-width: 0;
+        }
+
+        .qr-head {
+            padding: 22px 30px;
+            border-bottom: 1px solid #d6dfeb;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(6px);
+        }
+
+        .qr-head h1 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+
+        .qr-head p {
+            margin: 8px 0 0;
+            color: #64748b;
+            max-width: 760px;
+        }
+
+        .qr-content {
+            padding: 24px 28px 34px;
+        }
+
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .qr-card {
+            background: #fff;
+            border: 1px solid #dbe4ef;
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 6px 18px rgba(30, 41, 59, 0.08);
+        }
+
+        .qr-card h2 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .qr-stop-id {
+            margin: 4px 0 12px;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+
+        .qr-img {
+            width: 100%;
+            border: 1px solid #d7e2ef;
+            border-radius: 12px;
+            background: #fff;
+            display: block;
+        }
+
+        .qr-actions {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-download {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #1d4ed8;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .btn-download:hover {
+            background: #1e40af;
+        }
+
+        .target-url {
+            margin: 0;
+            color: #475569;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+
+        @media (max-width: 900px) {
+            .qr-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .qr-content {
+                padding: 16px;
+            }
+        }
+    </style>
+
+    <section class="qr-shell">
+        <div class="qr-layout">
+            {% include 'moderation/_sidebar.html.twig' with { active: 'qrcodes' } %}
+
+            <div class="qr-main">
+                <header class="qr-head">
+                    <h1>QR codes des arrets</h1>
+                    <p>Chaque QR code redirige vers le formulaire public avec un stop_id pre-rempli, pour accelerer le signalement sur le terrain.</p>
+                </header>
+
+                <div class="qr-content">
+                    <div class="qr-grid">
+                        {% for item in items %}
+                            <article class="qr-card">
+                                <h2>{{ item.stop.label }}</h2>
+                                <p class="qr-stop-id">{{ item.stop.id }}</p>
+                                <img class="qr-img" src="data:image/png;base64,{{ item.image_base64 }}" alt="QR code {{ item.stop.label }}">
+                                <div class="qr-actions">
+                                    <a class="btn-download" href="{{ path('app_moderation_qrcode_download', {id: item.stop.id}) }}">Telecharger PNG</a>
+                                    <p class="target-url">{{ item.target_url }}</p>
+                                </div>
+                            </article>
+                        {% else %}
+                            <p>Aucun arret disponible.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
