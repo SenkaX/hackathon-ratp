@@ -166,6 +166,61 @@
 
         .db-filter-btn:hover {
             background: #253a75;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes growBar {
+            from {
+                transform: scaleY(0.2);
+                opacity: 0;
+            }
+            to {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pieReveal {
+            from {
+                opacity: 0;
+                transform: rotate(-80deg) scale(0.78);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        @keyframes pieFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
         .db-kpis {
@@ -181,6 +236,21 @@
             border-radius: 12px;
             padding: 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.55s ease both;
+        }
+
+        .db-kpi:nth-child(2) { animation-delay: 0.05s; }
+        .db-kpi:nth-child(3) { animation-delay: 0.10s; }
+        .db-kpi:nth-child(4) { animation-delay: 0.15s; }
+        .db-kpi:nth-child(5) { animation-delay: 0.20s; }
+        .db-kpi:nth-child(6) { animation-delay: 0.25s; }
+
+        .db-kpi:hover,
+        .db-card:hover,
+        .recent-ticket:hover,
+        .hot-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
         }
 
         .db-kpi-icon {
@@ -222,6 +292,7 @@
             border-radius: 12px;
             padding: 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.6s ease both;
         }
 
         .db-card h2 {
@@ -229,33 +300,103 @@
             font-size: 1.15rem;
         }
 
-        .bars {
-            height: 260px;
+        .category-chart {
+            position: relative;
+            height: 370px;
+            padding: 16px 14px 0 46px;
+        }
+
+        .chart-grid {
+            position: absolute;
+            inset: 16px 14px 86px 46px;
+            border-left: 2px solid #64748b;
+            border-bottom: 2px solid #64748b;
+        }
+
+        .grid-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        .grid-line:nth-child(1) { top: 0; }
+        .grid-line:nth-child(2) { top: 25%; }
+        .grid-line:nth-child(3) { top: 50%; }
+        .grid-line:nth-child(4) { top: 75%; }
+
+        .y-axis-labels {
+            position: absolute;
+            left: 6px;
+            top: 16px;
+            bottom: 86px;
+            width: 36px;
+            color: #64748b;
+            font-size: 0.75rem;
             display: flex;
-            align-items: end;
-            gap: 10px;
-            padding-top: 16px;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .y-axis-labels span {
+            right: 0;
+            text-align: right;
+            line-height: 1;
+        }
+
+        .y-axis-labels span:nth-child(1) { order: 1; }
+        .y-axis-labels span:nth-child(2) { order: 2; }
+        .y-axis-labels span:nth-child(3) { order: 3; }
+        .y-axis-labels span:nth-child(4) { order: 4; }
+        .y-axis-labels span:nth-child(5) { order: 5; }
+
+        .bars {
+            position: absolute;
+            left: 52px;
+            right: 18px;
+            bottom: 86px;
+            top: 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
         }
 
         .bar-wrap {
             flex: 1;
-            text-align: center;
+            min-width: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            position: relative;
+            overflow: visible;
         }
 
         .bar {
+            width: 100%;
+            max-width: 64px;
             background: linear-gradient(180deg, #4f8df4, #3272d9);
-            border-radius: 8px 8px 0 0;
-            min-height: 20px;
+            border-radius: 10px 10px 0 0;
+            min-height: 14px;
+            transform-origin: bottom;
+            animation: growBar 0.7s ease-out both;
         }
 
         .bar-label {
-            font-size: 0.72rem;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            text-align: center;
+            font-size: 0.78rem;
             color: #64748b;
-            margin-top: 6px;
-            transform: rotate(-36deg);
-            transform-origin: top left;
-            white-space: nowrap;
-            display: inline-block;
+            line-height: 1.2;
+            white-space: normal;
+            word-break: normal;
+            overflow-wrap: break-word;
+            min-height: auto;
         }
 
         .pie-wrap {
@@ -270,16 +411,10 @@
             height: 230px;
             border-radius: 50%;
             margin: 0 auto;
-            background: conic-gradient(
-                #3b82f6 0% 20%,
-                #8b5cf6 20% 40%,
-                #ec4899 40% 70%,
-                #10b981 70% 80%,
-                #ef4444 80% 90%,
-                #f59e0b 90% 100%
-            );
+            background: conic-gradient(#3b82f6 0% 20%, #8b5cf6 20% 40%, #ec4899 40% 70%, #10b981 70% 80%, #ef4444 80% 90%, #f59e0b 90% 100%);
             border: 8px solid #fff;
             box-shadow: 0 2px 8px rgba(2, 6, 23, 0.14);
+            animation: pieReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both, pieFloat 5s ease-in-out 1s infinite;
         }
 
         .legend {
@@ -327,6 +462,8 @@
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.6s ease both;
         }
 
         .recent-top {
@@ -399,6 +536,8 @@
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.6s ease both;
         }
 
         .hot-item-head {
@@ -432,6 +571,18 @@
             padding-top: 12px;
             border-top: 1px solid #e2e8f0;
             color: #64748b;
+        }
+
+        .legend-item {
+            transition: transform 0.2s;
+        }
+
+        .legend-item:hover {
+            transform: translateX(3px);
+        }
+
+        .bar-wrap:hover .bar {
+            filter: brightness(1.04);
         }
 
         @media (max-width: 1300px) {
@@ -503,25 +654,40 @@
                     <section class="db-grid-2">
                         <article class="db-card">
                             <h2>Tickets par categorie</h2>
-                            <div class="bars">
-                                {% for item in categoryBars %}
-                                    <div class="bar-wrap">
-                                        <div class="bar" style="height: {{ item.value * 42 }}px;"></div>
-                                        <span class="bar-label">{{ item.label }}</span>
-                                    </div>
-                                {% endfor %}
+                            <div class="category-chart">
+                                <div class="chart-grid">
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                </div>
+                                <div class="y-axis-labels">
+                                    <span>{{ maxCategoryValue }}</span>
+                                    <span>{{ (maxCategoryValue * 0.75)|number_format(1) }}</span>
+                                    <span>{{ (maxCategoryValue * 0.5)|number_format(1) }}</span>
+                                    <span>{{ (maxCategoryValue * 0.25)|number_format(1) }}</span>
+                                    <span>0</span>
+                                </div>
+                                <div class="bars">
+                                    {% for item in categoryBars %}
+                                        <div class="bar-wrap">
+                                            <div class="bar" style="height: {{ ((item.value / maxCategoryValue) * 100)|round(1) }}%;"></div>
+                                            <span class="bar-label">{{ item.label }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </article>
 
                         <article class="db-card">
                             <h2>Repartition par statut</h2>
                             <div class="pie-wrap">
-                                <div class="pie"></div>
+                                <div class="pie" style="background: {{ pieGradient }};"></div>
                                 <div class="legend">
                                     {% for item in statusDistribution %}
                                         <div class="legend-item">
                                             <span class="dot" style="background: {{ item.color }};"></span>
-                                            <span>{{ item.label }}: {{ item.value }}%</span>
+                                            <span>{{ item.label }}: {{ item.count }} tickets ({{ item.value }}%)</span>
                                         </div>
                                     {% endfor %}
                                 </div>
