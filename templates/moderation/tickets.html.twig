@@ -215,6 +215,12 @@
             }
         }
 
+        @media (min-width: 1200px) {
+            .filters-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
         .filter-group {
             display: flex;
             flex-direction: column;
@@ -661,6 +667,18 @@
                                 {% for stop in stops %}
                                     <option value="{{ stop.id }}" {{ filters.stop == stop.id ? 'selected' : '' }}>
                                         {{ stop.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="user">Utilisateur</label>
+                            <select id="user" name="user">
+                                <option value="">Tous</option>
+                                {% for user in users %}
+                                    <option value="{{ user.id }}" {{ filters.user == user.id ? 'selected' : '' }}>
+                                        {{ user.email }}
                                     </option>
                                 {% endfor %}
                             </select>

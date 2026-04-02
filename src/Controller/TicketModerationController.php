@@ -9,6 +9,7 @@ use App\Enum\SignalementStatus;
 use App\Repository\BusStopRepository;
 use App\Repository\MotifGraviteRepository;
 use App\Repository\SignalementRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -451,43 +452,25 @@ final class TicketModerationController extends AbstractController
         return $response;
     }
 
-    #[Route('/mine', name: 'app_moderation_tickets_mine', methods: ['GET'])]
-    #[IsGranted('ROLE_MANAGER')]
-    public function myTickets(
-        Request $request,
-        SignalementRepository $signalementRepository,
-        BusStopRepository $busStopRepository,
-    ): Response {
-        $assignedRole = $this->resolveAssignedRoleForCurrentUser();
-
-        return $this->renderTicketsBoard(
-            $request,
-            $signalementRepository,
-            $busStopRepository,
-            $assignedRole,
-            'my_tickets',
-            'Mes tickets',
-            sprintf('Tickets assignes au role %s selon la gravite des signalements.', $assignedRole === User::ROLE_RH ? 'RH' : 'Manager'),
-            'app_moderation_tickets_mine',
-        );
-    }
-
     #[Route('', name: 'app_moderation_tickets', methods: ['GET'])]
     public function index(
         Request $request,
         SignalementRepository $signalementRepository,
         BusStopRepository $busStopRepository,
+        UserRepository $userRepository,
     ): Response
     {
         return $this->renderTicketsBoard(
             $request,
             $signalementRepository,
             $busStopRepository,
+            $userRepository,
             null,
             'kanban',
             'Tableau de bord Moderation',
             'Vue Kanban - Gestion centralisee des incidents',
             'app_moderation_tickets',
+            true,
         );
     }
 
@@ -495,19 +478,28 @@ final class TicketModerationController extends AbstractController
         Request $request,
         SignalementRepository $signalementRepository,
         BusStopRepository $busStopRepository,
+        UserRepository $userRepository,
         ?string $assignedRole,
         string $activeTab,
         string $pageTitle,
         string $pageSubtitle,
         string $resetRoute,
+        bool $defaultToCurrentUser,
     ): Response
     {
         $statusFilter = SignalementStatus::tryFrom((string) $request->query->get('status', ''));
         $motifFilter = SignalementMotif::tryFrom((string) $request->query->get('motif', ''));
         $stopFilter = trim((string) $request->query->get('stop', ''));
+        $hasUserFilter = $request->query->has('user');
+        $userFilter = trim((string) $request->query->get('user', ''));
+        $currentUser = $this->getUser();
+        $defaultUserFilter = $defaultToCurrentUser && !$hasUserFilter && $currentUser instanceof User ? (string) $currentUser->getId() : '';
+        $resolvedUserFilter = $userFilter !== '' ? $userFilter : $defaultUserFilter;
 
         $qb = $signalementRepository->createQueryBuilder('ticket')
             ->leftJoin('ticket.stop', 'stop')
+            ->leftJoin('ticket.reviewedBy', 'reviewedBy')
+            ->addSelect('reviewedBy')
             ->addSelect('stop')
             ->orderBy('ticket.prioriteScore', 'DESC')
             ->addOrderBy('ticket.submittedAt', 'DESC');
@@ -522,6 +514,10 @@ final class TicketModerationController extends AbstractController
 
         if ($stopFilter !== '') {
             $qb->andWhere('stop.id = :stopId')->setParameter('stopId', $stopFilter);
+        }
+
+        if ($resolvedUserFilter !== '') {
+            $qb->andWhere('reviewedBy.id = :reviewedById')->setParameter('reviewedById', (int) $resolvedUserFilter);
         }
 
         if ($assignedRole !== null) {
@@ -558,6 +554,7 @@ final class TicketModerationController extends AbstractController
             'statuses' => SignalementStatus::moderationCases(),
             'motifs' => SignalementMotif::cases(),
             'stops' => $busStopRepository->findBy([], ['label' => 'ASC']),
+            'users' => $userRepository->findBy([], ['email' => 'ASC']),
             'activeTab' => $activeTab,
             'pageTitle' => $pageTitle,
             'pageSubtitle' => $pageSubtitle,
@@ -567,6 +564,7 @@ final class TicketModerationController extends AbstractController
                 'status' => $statusFilter?->value,
                 'motif' => $motifFilter?->value,
                 'stop' => $stopFilter,
+                'user' => $resolvedUserFilter,
             ],
             'kpis' => $kpis,
         ]);
@@ -698,7 +696,7 @@ final class TicketModerationController extends AbstractController
     {
         $route = (string) $request->request->get('_redirect_route', 'app_moderation_tickets');
 
-        return in_array($route, ['app_moderation_tickets', 'app_moderation_tickets_mine'], true)
+        return in_array($route, ['app_moderation_tickets'], true)
             ? $route
             : 'app_moderation_tickets';
     }
