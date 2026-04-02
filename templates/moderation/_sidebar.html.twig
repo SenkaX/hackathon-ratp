@@ -1,0 +1,17 @@
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">R</div>
+        <div class="brand-text">
+            <strong>RATP Bus</strong>
+            <span>Gestion des incidents</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="{{ path('app_moderation_dashboard') }}" class="sidebar-link {{ active == 'dashboard' ? 'active' : '' }}">Tableau de bord</a>
+        <a href="{{ path('app_moderation_tickets') }}" class="sidebar-link {{ active == 'kanban' ? 'active' : '' }}">Vue Kanban</a>
+        <a href="{{ path('app_moderation_projects') }}" class="sidebar-link {{ active == 'projects' ? 'active' : '' }}">Projets</a>
+        <a href="{{ path('app_moderation_users') }}" class="sidebar-link {{ active == 'users' ? 'active' : '' }}">Utilisateurs</a>
+        <a href="{{ path('app_moderation_settings') }}" class="sidebar-link {{ active == 'settings' ? 'active' : '' }}">Parametres</a>
+    </nav>
+</aside>

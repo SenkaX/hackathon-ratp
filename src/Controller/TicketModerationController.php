@@ -18,6 +18,102 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/moderation/tickets')]
 final class TicketModerationController extends AbstractController
 {
+    #[Route('/projects', name: 'app_moderation_projects', methods: ['GET'])]
+    public function projects(): Response
+    {
+        $projects = [
+            [
+                'name' => 'Station Chatelet',
+                'subtitle' => 'Chatelet',
+                'description' => 'Gestion des incidents pour la station Chatelet',
+                'lines' => ['21', '38', '47', '58', '69', '70', '+4'],
+                'total' => 4,
+                'pending' => 1,
+                'inProgress' => 1,
+                'critical' => 1,
+                'iconColor' => '#3b82f6',
+            ],
+            [
+                'name' => 'Station Gare du Nord',
+                'subtitle' => 'Gare du Nord',
+                'description' => 'Gestion des incidents pour la station Gare du Nord',
+                'lines' => ['26', '31', '35', '38', '39', '42', '+4'],
+                'total' => 3,
+                'pending' => 0,
+                'inProgress' => 1,
+                'critical' => 0,
+                'iconColor' => '#3b82f6',
+            ],
+            [
+                'name' => 'Station République',
+                'subtitle' => 'Republique',
+                'description' => 'Gestion des incidents pour la station Republique',
+                'lines' => ['20', '56', '65', '75'],
+                'total' => 3,
+                'pending' => 1,
+                'inProgress' => 1,
+                'critical' => 0,
+                'iconColor' => '#3b82f6',
+            ],
+        ];
+
+        return $this->render('moderation/projects.html.twig', [
+            'projects' => $projects,
+            'overview' => [
+                ['label' => 'Stations suivies', 'value' => 3],
+                ['label' => 'Lignes couvertes', 'value' => 18],
+                ['label' => 'Tickets ouverts', 'value' => 8],
+            ],
+        ]);
+    }
+
+    #[Route('/users', name: 'app_moderation_users', methods: ['GET'])]
+    public function users(): Response
+    {
+        $users = [
+            [
+                'name' => 'Marie Dupont',
+                'role' => 'Admin',
+                'roleColor' => '#6366f1',
+                'email' => 'marie.dupont@ratp.fr',
+                'description' => 'Acces complet - Validation et decisions strategiques',
+                'assigned' => 2,
+                'created' => 0,
+                'pending' => 0,
+                'inProgress' => 0,
+                'systemNote' => null,
+            ],
+            [
+                'name' => 'Thomas Martin',
+                'role' => 'RH',
+                'roleColor' => '#6366f1',
+                'email' => 'thomas.martin@ratp.fr',
+                'description' => 'Gestion des incidents RH et comportements',
+                'assigned' => 3,
+                'created' => 0,
+                'pending' => 1,
+                'inProgress' => 1,
+                'systemNote' => null,
+            ],
+            [
+                'name' => 'Sophie Bernard',
+                'role' => 'Manager',
+                'roleColor' => '#6366f1',
+                'email' => 'sophie.bernard@ratp.fr',
+                'description' => 'Supervision des operations et coordination avec les equipes terrain',
+                'assigned' => 3,
+                'created' => 0,
+                'pending' => 1,
+                'inProgress' => 1,
+                'systemNote' => null       
+            ],
+        ];
+
+        return $this->render('moderation/users.html.twig', [
+            'users' => $users,
+        ]);
+    }
+
     #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
@@ -92,6 +188,47 @@ final class TicketModerationController extends AbstractController
             'statusDistribution' => $statusDistribution,
             'recentTickets' => $recentTickets,
             'hotspots' => $hotspots,
+        ]);
+    }
+
+    #[Route('/settings', name: 'app_moderation_settings', methods: ['GET'])]
+    public function settings(): Response
+    {
+        return $this->render('moderation/settings.html.twig', [
+            'notificationRules' => [
+                ['label' => 'Tickets critiques', 'enabled' => true],
+                ['label' => 'Nouveaux tickets IA', 'enabled' => true],
+                ['label' => 'Tickets assignes', 'enabled' => true],
+                ['label' => 'Points chauds detectes', 'enabled' => false],
+            ],
+            'securityRules' => [
+                ['label' => 'Anonymisation automatique', 'enabled' => true],
+                ['label' => 'Logs d\'audit', 'enabled' => true],
+                ['label' => 'Validation humaine obligatoire', 'enabled' => true, 'disabled' => true],
+            ],
+            'sources' => [
+                ['name' => 'Cameras bus', 'status' => 'Actif'],
+                ['name' => 'QR Codes', 'status' => 'Actif'],
+                ['name' => 'Reseaux sociaux (Scraping)', 'status' => 'Test'],
+            ],
+            'automationRules' => [
+                ['label' => 'Creation auto de tickets', 'enabled' => true],
+                ['label' => 'Resumes IA', 'enabled' => true],
+                ['label' => 'Fusion automatique des doublons', 'enabled' => true],
+                ['label' => 'Detection points chauds', 'enabled' => true],
+                ['label' => 'Indice de confiance', 'enabled' => true],
+            ],
+            'confidence' => [
+                'high' => 80,
+                'medium' => 60,
+                'penalty' => 10,
+            ],
+            'systemInfo' => [
+                'version' => 'v1.0.0 (Prototype)',
+                'environment' => 'Developpement',
+                'processed' => 10,
+                'uptime' => '99.9%',
+            ],
         ]);
     }
 

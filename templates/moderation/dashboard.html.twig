@@ -19,7 +19,7 @@
             min-height: 100vh;
         }
 
-        .db-sidebar {
+        .sidebar {
             background: #f8fafc;
             border-right: 1px solid #e5e7eb;
             padding: 22px 16px;
@@ -28,14 +28,14 @@
             gap: 20px;
         }
 
-        .db-brand {
+        .sidebar-brand {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 8px 10px;
         }
 
-        .db-brand-logo {
+        .brand-logo {
             width: 40px;
             height: 40px;
             border-radius: 12px;
@@ -49,7 +49,7 @@
             flex-shrink: 0;
         }
 
-        .db-brand-text strong {
+        .brand-text strong {
             display: block;
             color: #111827;
             font-size: 1.05rem;
@@ -57,19 +57,22 @@
             font-weight: 700;
         }
 
-        .db-brand-text span {
+        .brand-text span {
             color: #64748b;
             font-size: 0.84rem;
         }
 
-        .db-nav {
+        .sidebar-nav {
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding: 4px 6px;
         }
 
-        .db-nav a {
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             text-decoration: none;
             color: #334155;
             font-weight: 500;
@@ -79,13 +82,13 @@
             transition: background 0.2s, color 0.2s;
         }
 
-        .db-nav a.active,
-        .db-nav a:hover {
+        .sidebar-link.active,
+        .sidebar-link:hover {
             background: #e2e8f0;
             color: #1e3a8a;
         }
 
-        .db-nav a.active {
+        .sidebar-link.active {
             background: #e0e7ff;
             color: #1e40af;
             font-weight: 700;
@@ -448,9 +451,9 @@
                 grid-template-columns: 1fr;
             }
 
-            .db-sidebar {
+            .sidebar {
                 border-right: 0;
-                border-bottom: 1px solid #dfe7f3;
+                border-bottom: 1px solid #e5e7eb;
             }
 
             .db-content {
@@ -465,31 +468,14 @@
 
     <section class="db-shell">
         <div class="db-layout">
-            <aside class="db-sidebar">
-                <div class="db-brand">
-                    <div class="db-brand-logo">R</div>
-                    <div class="db-brand-text">
-                        <strong>RATP Bus</strong>
-                        <span>Gestion des incidents</span>
-                    </div>
-                </div>
-
-                <nav class="db-nav">
-                    <a href="{{ path('app_moderation_dashboard') }}" class="active">Tableau de bord</a>
-                    <a href="{{ path('app_moderation_tickets') }}">Vue Kanban</a>
-                    <a href="#">Projets</a>
-                    <a href="#">Utilisateurs</a>
-                    <a href="#">Parametres</a>
-                </nav>
-
-            </aside>
+            {% include 'moderation/_sidebar.html.twig' with { active: 'dashboard' } %}
 
             <div class="db-main">
                 <header class="db-top">
                     <div class="db-user">
                         <div>
                             Marie Dupont
-                            <div style="font-size:0.82rem;color:#64748b;font-weight:500;">Direction</div>
+                            <div style="font-size:0.82rem;color:#64748b;font-weight:500;">Admin</div>
                         </div>
                         <div class="db-avatar">O</div>
                     </div>
