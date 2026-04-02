@@ -120,77 +120,186 @@ final class TicketModerationController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
-    public function dashboard(): Response
+    public function dashboard(
+        SignalementRepository $signalementRepository,
+    ): Response
     {
+        $tickets = $signalementRepository->createQueryBuilder('ticket')
+            ->leftJoin('ticket.stop', 'stop')
+            ->addSelect('stop')
+            ->orderBy('ticket.submittedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $statusCounts = [
+            'en_attente_validation' => 0,
+            'valide' => 0,
+            'en_cours' => 0,
+            'sans_suite' => 0,
+            'escalade_juridique' => 0,
+            'resolu' => 0,
+        ];
+
+        $criticalTickets = 0;
+        $confidenceTotal = 0;
+        $recentTickets = [];
+
+        foreach ($tickets as $ticket) {
+            $statusValue = $ticket->getStatus()->value;
+            if (isset($statusCounts[$statusValue])) {
+                ++$statusCounts[$statusValue];
+            }
+
+            if ($ticket->getPrioriteScore() >= 75) {
+                ++$criticalTickets;
+            }
+
+            $confidenceTotal += $ticket->getConfianceScore();
+
+            if (count($recentTickets) < 5) {
+                $recentTickets[] = [
+                    'id' => 'TICK-' . strtoupper(substr((string) $ticket->getId(), 0, 8)),
+                    'priority' => $ticket->getPrioriteScore() >= 75 ? 'Critique' : ($ticket->getPrioriteScore() >= 50 ? 'Haute' : ($ticket->getPrioriteScore() >= 25 ? 'Moyenne' : 'Faible')),
+                    'priorityColor' => $ticket->getPrioriteScore() >= 75 ? '#ef4444' : ($ticket->getPrioriteScore() >= 50 ? '#f97316' : ($ticket->getPrioriteScore() >= 25 ? '#3b82f6' : '#22c55e')),
+                    'title' => $ticket->getMotif()?->label() ?? 'Ticket',
+                    'tags' => [$ticket->getMotif()?->value ?? 'unknown', $ticket->getStatus()->label()],
+                    'description' => $ticket->getDetails(),
+                    'location' => $ticket->getStop()?->getLabel() ?? 'Aucun arrêt',
+                    'source' => $ticket->getEmail() !== '' ? 'Email' : 'Source inconnue',
+                    'date' => $ticket->getSubmittedAt()->format('d/m/Y H:i'),
+                    'confidence' => $ticket->getConfianceScore(),
+                    'assigned' => 'Assigné',
+                ];
+            }
+        }
+
+        $totalTickets = count($tickets);
+        $averageConfidence = $totalTickets > 0 ? (int) round($confidenceTotal / $totalTickets) : 0;
+
         $kpis = [
-            ['label' => 'Total Tickets', 'value' => 10, 'color' => '#3b82f6', 'icon' => 'pulse'],
-            ['label' => 'En attente validation', 'value' => 2, 'color' => '#eab308', 'icon' => 'clock'],
-            ['label' => 'En cours', 'value' => 3, 'color' => '#a855f7', 'icon' => 'trend'],
-            ['label' => 'Resolus', 'value' => 1, 'color' => '#22c55e', 'icon' => 'check'],
-            ['label' => 'Tickets critiques', 'value' => 1, 'color' => '#ef4444', 'icon' => 'alert'],
-            ['label' => 'Indice confiance moy.', 'value' => '79%', 'color' => '#6366f1', 'icon' => 'shield'],
+            ['label' => 'Total Tickets', 'value' => $totalTickets, 'color' => '#3b82f6', 'icon' => 'pulse'],
+            ['label' => 'En attente validation', 'value' => $statusCounts['en_attente_validation'], 'color' => '#eab308', 'icon' => 'clock'],
+            ['label' => 'En cours', 'value' => $statusCounts['en_cours'], 'color' => '#a855f7', 'icon' => 'trend'],
+            ['label' => 'Resolus', 'value' => $statusCounts['resolu'], 'color' => '#22c55e', 'icon' => 'check'],
+            ['label' => 'Tickets critiques', 'value' => $criticalTickets, 'color' => '#ef4444', 'icon' => 'alert'],
+            ['label' => 'Indice confiance moy.', 'value' => $averageConfidence . '%', 'color' => '#6366f1', 'icon' => 'shield'],
         ];
 
-        $categoryBars = [
-            ['label' => 'Comportement suspect', 'value' => 2],
-            ['label' => 'Bagarre/Agression', 'value' => 1],
-            ['label' => 'Plainte client', 'value' => 2],
-            ['label' => 'Accident', 'value' => 1],
-            ['label' => 'Retard', 'value' => 1],
-            ['label' => 'Objet perdu', 'value' => 1],
-            ['label' => 'Arret saute', 'value' => 1],
-            ['label' => 'Autre', 'value' => 2],
+        $categoryCounts = [];
+        $stopStats = [];
+
+        foreach ($tickets as $ticket) {
+            $motif = $ticket->getMotif();
+            if ($motif !== null) {
+                $label = $motif->label();
+                $categoryCounts[$label] = ($categoryCounts[$label] ?? 0) + 1;
+            }
+
+            $stopLabel = $ticket->getStop()?->getLabel() ?? 'Non renseigné';
+            if (!isset($stopStats[$stopLabel])) {
+                $stopStats[$stopLabel] = [
+                    'incidents' => 0,
+                    'slots' => ['matin' => 0, 'midi' => 0, 'soir' => 0, 'nuit' => 0],
+                ];
+            }
+
+            ++$stopStats[$stopLabel]['incidents'];
+
+            $hour = (int) $ticket->getSubmittedAt()->format('H');
+            $slot = match (true) {
+                $hour >= 6 && $hour < 12 => 'matin',
+                $hour >= 12 && $hour < 17 => 'midi',
+                $hour >= 17 && $hour < 22 => 'soir',
+                default => 'nuit',
+            };
+            ++$stopStats[$stopLabel]['slots'][$slot];
+        }
+
+        arsort($categoryCounts);
+        $categoryBars = [];
+        foreach (array_slice($categoryCounts, 0, 8, true) as $label => $count) {
+            $categoryBars[] = ['label' => $label, 'value' => $count];
+        }
+
+        if ($categoryBars === []) {
+            $categoryBars[] = ['label' => 'Aucune donnée', 'value' => 1];
+        }
+
+        $maxCategoryValue = max(1, ...array_map(
+            static fn (array $item): int => (int) $item['value'],
+            $categoryBars,
+        ));
+
+        $statusMeta = [
+            'en_attente_validation' => ['label' => 'En attente de validation', 'color' => '#3b82f6'],
+            'valide' => ['label' => 'Valide', 'color' => '#8b5cf6'],
+            'en_cours' => ['label' => 'En cours', 'color' => '#ec4899'],
+            'sans_suite' => ['label' => 'Classe sans suite', 'color' => '#10b981'],
+            'escalade_juridique' => ['label' => 'Juridique', 'color' => '#f59e0b'],
+            'resolu' => ['label' => 'Resolu', 'color' => '#ef4444'],
         ];
 
-        $statusDistribution = [
-            ['label' => 'En attente de validation', 'value' => 20, 'color' => '#3b82f6'],
-            ['label' => 'Valide', 'value' => 20, 'color' => '#8b5cf6'],
-            ['label' => 'En cours', 'value' => 30, 'color' => '#ec4899'],
-            ['label' => 'Classe sans suite', 'value' => 10, 'color' => '#10b981'],
-            ['label' => 'Resolu', 'value' => 10, 'color' => '#ef4444'],
-            ['label' => 'Juridique', 'value' => 10, 'color' => '#f59e0b'],
+        $statusDistribution = [];
+        foreach ($statusMeta as $statusValue => $meta) {
+            $count = $statusCounts[$statusValue];
+            $statusDistribution[] = [
+                'label' => $meta['label'],
+                'count' => $count,
+                'value' => $totalTickets > 0 ? round(($count / $totalTickets) * 100) : 0,
+                'color' => $meta['color'],
+            ];
+        }
+
+        $pieSegments = [];
+        $accumulated = 0;
+        foreach ($statusDistribution as $index => $item) {
+            $start = $accumulated;
+            $accumulated += (float) $item['value'];
+            $end = $index === array_key_last($statusDistribution) ? 100 : $accumulated;
+            $pieSegments[] = sprintf('%s %s%% %s%%', $item['color'], $start, $end);
+        }
+
+        $pieGradient = 'conic-gradient(' . implode(', ', $pieSegments) . ')';
+
+        uasort($stopStats, static fn (array $a, array $b): int => $b['incidents'] <=> $a['incidents']);
+
+        $slotLabels = [
+            'matin' => 'Créneau dominant: matin',
+            'midi' => 'Créneau dominant: midi',
+            'soir' => 'Créneau dominant: soir',
+            'nuit' => 'Créneau dominant: nuit',
         ];
 
-        $recentTickets = [
-            [
-                'id' => 'TICK-009',
-                'priority' => 'Moyenne',
-                'priorityColor' => '#3b82f6',
-                'title' => 'Client mecontent - Delai de reponse',
-                'tags' => ['Plainte client', 'Ligne 72'],
-                'description' => "Plainte d'un client concernant l'absence de reponse a sa precedente reclamation.",
-                'location' => 'Chatelet',
-                'source' => 'Email',
-                'date' => '30 mars 2026 10:00',
-                'confidence' => 75,
-                'assigned' => 'Assigne',
-            ],
-            [
-                'id' => 'TICK-001',
-                'priority' => 'Haute',
-                'priorityColor' => '#f97316',
-                'title' => 'Retard repetitif ligne 38 - Chauffeur Jean D.',
-                'tags' => ['Comportement suspect', 'Ligne 38'],
-                'description' => "Le chauffeur Jean D. a accumule 5 retards significatifs sur les 2 dernieres semaines.",
-                'location' => 'Chatelet - Porte de Versailles',
-                'source' => 'Agent infiltre',
-                'date' => '30 mars 2026 08:15',
-                'confidence' => 85,
-                'assigned' => 'Assigne',
-            ],
-        ];
+        $hotspots = [];
+        foreach (array_slice($stopStats, 0, 4, true) as $place => $stats) {
+            $dominantSlot = array_key_first($stats['slots']);
+            foreach ($stats['slots'] as $slot => $value) {
+                if ($value > $stats['slots'][$dominantSlot]) {
+                    $dominantSlot = $slot;
+                }
+            }
 
-        $hotspots = [
-            ['place' => 'Republique - Marche du vendredi', 'window' => 'Vendredi 7h-10h', 'incidents' => 12, 'level' => 'Haute'],
-            ['place' => 'Chatelet - Rue de Rivoli', 'window' => 'Lundi-Vendredi 17h-19h', 'incidents' => 8, 'level' => 'Moyenne'],
-            ['place' => 'Gare du Nord - Boulevard Magenta', 'window' => 'Quotidien 8h-9h', 'incidents' => 6, 'level' => 'Moyenne'],
-            ['place' => 'Chatelet - Porte de Versailles', 'window' => 'Mardi-Jeudi 7h30-9h', 'incidents' => 5, 'level' => 'Faible'],
-        ];
+            $incidents = $stats['incidents'];
+            $level = match (true) {
+                $incidents >= 6 => 'Haute',
+                $incidents >= 3 => 'Moyenne',
+                default => 'Faible',
+            };
+
+            $hotspots[] = [
+                'place' => $place,
+                'window' => $slotLabels[$dominantSlot],
+                'incidents' => $incidents,
+                'level' => $level,
+            ];
+        }
 
         return $this->render('moderation/dashboard.html.twig', [
             'kpis' => $kpis,
             'categoryBars' => $categoryBars,
+            'maxCategoryValue' => $maxCategoryValue,
             'statusDistribution' => $statusDistribution,
+            'pieGradient' => $pieGradient,
             'recentTickets' => $recentTickets,
             'hotspots' => $hotspots,
         ]);
