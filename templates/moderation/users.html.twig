@@ -4,7 +4,7 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
         .users-shell {
             min-height: 100vh;
@@ -320,6 +320,109 @@
             .topbar {
                 grid-template-columns: 1fr;
             }
+        }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .users-shell,
+        .users-layout {
+            background: var(--bg) !important;
+            font-family: 'DM Sans', sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo,
+        .avatar,
+        .user-icon {
+            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .topbar {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .search {
+            border-color: var(--border) !important;
+            background-color: #fff !important;
+            color: var(--text-dim) !important;
+        }
+
+        .header-row h1,
+        .user-name,
+        .stat-value {
+            color: var(--text) !important;
+        }
+
+        .header-row p,
+        .user-email,
+        .user-desc,
+        .stat-label,
+        .brand-text span,
+        .top-user {
+            color: var(--text-dim) !important;
+        }
+
+        .btn-primary {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .btn-primary:hover {
+            background: var(--jade-dim) !important;
+        }
+
+        .user-card {
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+            border-radius: 10px !important;
+        }
+
+        .system-note {
+            background: rgba(0, 60, 166, 0.06) !important;
+            border-color: rgba(0, 60, 166, 0.2) !important;
+        }
+
+        .card-footer {
+            background: #fbfdff !important;
+            border-top-color: var(--border) !important;
+        }
+
+        .card-footer a {
+            color: var(--azur) !important;
         }
     </style>
 

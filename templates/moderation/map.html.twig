@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
         .map-shell {
             background: linear-gradient(140deg, #f4f7fb 0%, #e9f0f9 60%, #f3f4f6 100%);
             min-height: 100vh;
@@ -268,6 +270,115 @@
             #moderation-map {
                 min-height: 480px;
             }
+        }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .map-shell,
+        .map-layout {
+            background: var(--bg) !important;
+            font-family: 'DM Sans', sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .map-header {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .map-header h1 {
+            color: var(--text) !important;
+        }
+
+        .map-header p,
+        .filter-label,
+        .loading,
+        .brand-text span {
+            color: var(--text-dim) !important;
+        }
+
+        .btn-mini {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+            background: #fff !important;
+        }
+
+        .btn-mini:hover {
+            border-color: var(--azur) !important;
+            color: var(--azur) !important;
+            background: #f4f8ff !important;
+        }
+
+        .filters {
+            background: #fff !important;
+            border-color: var(--border) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05);
+        }
+
+        .radio-chip {
+            border-color: var(--border) !important;
+            background: #fff !important;
+            color: var(--text-dim) !important;
+        }
+
+        .radio-chip:has(input:checked) {
+            background: var(--jade) !important;
+            border-color: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .filter-select {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+        }
+
+        #moderation-map {
+            border-color: var(--border) !important;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 10px 28px rgba(0, 34, 68, 0.08) !important;
+        }
+
+        .map-legend span {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+            background: #fff !important;
         }
     </style>
 

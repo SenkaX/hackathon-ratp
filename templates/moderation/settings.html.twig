@@ -4,7 +4,7 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
         .dashboard-shell {
             background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
@@ -350,6 +350,126 @@
             .page {
                 padding: 20px;
             }
+        }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .dashboard-shell,
+        .dashboard-layout {
+            background: var(--bg) !important;
+            font-family: 'DM Sans', sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo,
+        .avatar {
+            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .topbar {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .page h1,
+        .panel-title,
+        .wide h3,
+        .system-value {
+            color: var(--text) !important;
+        }
+
+        .page .subtitle,
+        .slider-line label,
+        .wide p,
+        .system-label,
+        .slider-meta,
+        .brand-text span,
+        .top-user {
+            color: var(--text-dim) !important;
+        }
+
+        .panel,
+        .wide,
+        .source-item,
+        .system-info {
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+        }
+
+        .source-item,
+        .system-info {
+            background: #f5faf9 !important;
+        }
+
+        .ok-banner {
+            background: rgba(46, 160, 67, 0.12) !important;
+            border-color: rgba(46, 160, 67, 0.28) !important;
+            color: #167a2c !important;
+        }
+
+        .tag.active {
+            background: rgba(46, 160, 67, 0.14) !important;
+            color: #167a2c !important;
+        }
+
+        .tag.test {
+            background: rgba(240, 180, 41, 0.18) !important;
+            color: #9a6f00 !important;
+        }
+
+        input[type='checkbox'],
+        .slider-line input[type='range'] {
+            accent-color: var(--jade);
+        }
+
+        .small-number {
+            border-color: var(--border) !important;
+            color: var(--text) !important;
+        }
+
+        .btn-primary,
+        .btn {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .btn-light {
+            background: transparent !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-dim) !important;
         }
     </style>
 

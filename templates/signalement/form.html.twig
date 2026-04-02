@@ -4,15 +4,38 @@
 
 {% block body %}
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
         .ratp-shell {
-            --ratp-blue: #2f4c99;
-            --ratp-jade: #00a88f;
-            --ratp-bg: #edf3fb;
-            --ratp-field: #f8fbff;
-            background: var(--ratp-blue);
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            min-height: 100vh;
+            background: radial-gradient(circle at 0% 0%, #eef8f6 0%, #ffffff 56%), radial-gradient(circle at 100% 100%, #edf3ff 0%, transparent 44%);
             border: 0;
-            border-radius: 20px;
+            border-radius: 0;
+            padding: 28px 16px;
+            overflow: visible;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+        }
+
+        .ratp-shell .card {
+            width: min(780px, 100%);
+            margin: 0;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
             padding: 0;
+            box-shadow: 0 12px 32px rgba(0, 34, 68, 0.08);
             overflow: hidden;
         }
 
@@ -21,39 +44,65 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            padding: 18px 20px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent);
-            color: #ffffff;
+            padding: 18px 20px 14px;
+            background: #fff;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .ratp-header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--azur) 0%, var(--jade) 55%, var(--coq) 100%);
+            opacity: 0.45;
         }
 
         .ratp-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-weight: 800;
             letter-spacing: 0.08em;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            border-radius: 999px;
-            padding: 5px 12px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .ratp-badge img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            padding: 4px;
         }
 
         .ratp-header p {
             margin: 0;
-            color: rgba(255, 255, 255, 0.86);
+            color: var(--text-dim);
+            font-size: 0.86rem;
         }
 
         .ratp-content {
-            background: var(--ratp-bg);
+            background: #fff;
             padding: 24px;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
         }
 
         .ratp-content h1 {
             margin: 0 0 6px;
-            color: var(--ratp-blue);
+            color: var(--text);
         }
 
         .ratp-content .muted {
-            color: #2f4c99;
+            color: var(--text-dim);
             margin-bottom: 18px;
         }
 
@@ -62,37 +111,55 @@
         }
 
         .ratp-content label {
-            color: var(--ratp-blue);
-            font-weight: 700;
+            color: var(--text-dim);
+            font-weight: 800;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }
 
         .ratp-content input,
         .ratp-content select,
         .ratp-content textarea {
-            background: var(--ratp-field);
-            border: 1px solid #b7cae2;
-            border-radius: 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             padding: 11px 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
         }
 
         .ratp-content input:focus,
         .ratp-content select:focus,
         .ratp-content textarea:focus {
-            border-color: var(--ratp-jade);
-            outline: 3px solid rgba(0, 168, 143, 0.2);
+            border-color: var(--jade);
+            outline: 3px solid rgba(0, 196, 179, 0.12);
             box-shadow: none;
+        }
+
+        .ratp-content ul {
+            margin: 6px 0 0;
+            padding-left: 18px;
+            color: #c82820;
+            font-size: 0.82rem;
+            font-weight: 600;
         }
 
         .ratp-submit {
             width: 100%;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 12px 16px;
-            font-size: 1rem;
-            background: linear-gradient(90deg, #00a88f 0%, #00967f 100%);
+            font-size: 0.84rem;
+            background: var(--jade);
             border: 0;
             color: #ffffff;
             font-weight: 700;
             cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .ratp-submit:hover {
+            background: var(--jade-dim);
         }
 
         @media (min-width: 768px) {
@@ -109,7 +176,10 @@
 
     <section class="card ratp-shell">
         <div class="ratp-header">
-            <span class="ratp-badge">RATP</span>
+            <span class="ratp-badge">
+                <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/0/01/RATP.svg/1280px-RATP.svg.png?_=20211228035138" alt="Logo RATP">
+                Signalement public
+            </span>
             <p>Faire un signalement</p>
         </div>
 

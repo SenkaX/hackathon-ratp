@@ -3,32 +3,214 @@
 {% block title %}Connexion administration{% endblock %}
 
 {% block body %}
-    <section class="card" style="max-width: 520px; margin: 0 auto;">
-        <h1>Connexion administration</h1>
-        <p class="muted">Acces reserve aux comptes internes.</p>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
-        {% if error %}
-            <p style="color:#b42318;font-weight:600;">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
-        {% endif %}
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+        }
 
-        <form method="post" action="{{ path('app_admin_login') }}">
-            <div style="margin-bottom:12px;">
-                <label for="username">Email</label>
-                <input id="username" type="email" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+        }
+
+        .login-shell {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 28px 16px;
+            background: radial-gradient(circle at 0% 0%, #eef8f6 0%, #ffffff 56%), radial-gradient(circle at 100% 100%, #edf3ff 0%, transparent 44%);
+        }
+
+        .login-card {
+            width: min(560px, 100%);
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 34, 68, 0.08);
+            overflow: hidden;
+        }
+
+        .login-head {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            background: #fff;
+        }
+
+        .login-head::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--azur) 0%, var(--jade) 55%, var(--coq) 100%);
+            opacity: 0.45;
+        }
+
+        .login-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+
+        .login-brand img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            padding: 4px;
+        }
+
+        .login-head h1 {
+            margin: 0;
+            font-size: 1.55rem;
+            letter-spacing: -0.2px;
+        }
+
+        .login-head p {
+            margin: 8px 0 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .login-content {
+            padding: 20px 24px 24px;
+        }
+
+        .error-msg {
+            margin: 0 0 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #c82820;
+            border: 1px solid rgba(226, 35, 26, 0.3);
+            background: rgba(226, 35, 26, 0.1);
+        }
+
+        .form-field {
+            margin-bottom: 12px;
+        }
+
+        .form-field label {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-dim);
+            font-weight: 800;
+            margin-bottom: 7px;
+        }
+
+        .form-field input {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 11px 12px;
+            background: #fff;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .form-field input:focus {
+            outline: none;
+            border-color: var(--jade);
+            box-shadow: 0 0 0 3px rgba(0, 196, 179, 0.12);
+        }
+
+        .actions {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .btn,
+        .btn-link {
+            width: 100%;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            text-decoration: none;
+        }
+
+        .btn {
+            background: var(--jade);
+            color: #fff;
+            border: 0;
+        }
+
+        .btn:hover {
+            background: var(--jade-dim);
+        }
+
+        .btn-link {
+            background: transparent;
+            color: var(--azur);
+            border: 1px solid var(--border);
+        }
+
+        .btn-link:hover {
+            border-color: var(--azur);
+            background: #f4f8ff;
+        }
+    </style>
+
+    <section class="login-shell">
+        <div class="login-card">
+            <header class="login-head">
+                <div class="login-brand">
+                    <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/0/01/RATP.svg/1280px-RATP.svg.png?_=20211228035138" alt="Logo RATP">
+                    Espace moderation
+                </div>
+                <h1>Connexion administration</h1>
+                <p>Acces reserve aux comptes internes.</p>
+            </header>
+
+            <div class="login-content">
+                {% if error %}
+                    <p class="error-msg">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+                {% endif %}
+
+                <form method="post" action="{{ path('app_admin_login') }}">
+                    <div class="form-field">
+                        <label for="username">Email</label>
+                        <input id="username" type="email" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="password">Mot de passe</label>
+                        <input id="password" type="password" name="_password" autocomplete="current-password" required>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="actions">
+                        <button class="btn" type="submit">Se connecter</button>
+                        <a href="{{ path('app_signalement') }}" class="btn-link">Je souhaite faire un signalement</a>
+                    </div>
+                </form>
             </div>
-
-            <div style="margin-bottom:16px;">
-                <label for="password">Mot de passe</label>
-                <input id="password" type="password" name="_password" autocomplete="current-password" required>
-            </div>
-
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-            <button class="btn" type="submit">Se connecter</button>
-        </form>
-
-        <div style="margin-top: 16px;">
-            <a href="{{ path('app_signalement') }}" class="btn btn-link">Je souhaite faire un signalement</a>
         </div>
     </section>
 {% endblock %}

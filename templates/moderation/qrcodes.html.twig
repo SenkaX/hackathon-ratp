@@ -4,6 +4,8 @@
 
 {% block body %}
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
         .qr-shell {
             background: linear-gradient(145deg, #f6f8fc 0%, #eef2f9 100%);
             min-height: 100vh;
@@ -193,6 +195,85 @@
             .qr-content {
                 padding: 16px;
             }
+        }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+        }
+
+        .qr-shell,
+        .qr-layout {
+            background: var(--bg) !important;
+            font-family: 'DM Sans', sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .qr-head {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .qr-head h1 {
+            color: var(--text) !important;
+        }
+
+        .qr-head p,
+        .qr-stop-id,
+        .target-url,
+        .brand-text span {
+            color: var(--text-dim) !important;
+        }
+
+        .qr-card {
+            border-color: var(--border) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+        }
+
+        .qr-img {
+            border-color: var(--border) !important;
+        }
+
+        .btn-download {
+            background: var(--jade) !important;
+        }
+
+        .btn-download:hover {
+            background: var(--jade-dim) !important;
         }
     </style>
 
