@@ -9,7 +9,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class AdminLoginController extends AbstractController
 {
-    #[Route('/admin', name: 'app_admin_login', methods: ['GET', 'POST'])]
+    #[Route('/login', name: 'app_admin_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->isGranted('ROLE_ADMIN')) {

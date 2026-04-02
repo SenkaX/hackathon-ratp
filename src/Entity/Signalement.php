@@ -41,8 +41,27 @@ class Signalement
     #[ORM\Column(options: ['default' => false])]
     private bool $isTest = false;
 
-    #[ORM\Column(length: 32, enumType: SignalementStatus::class, options: ['default' => 'en_cours'])]
-    private SignalementStatus $status = SignalementStatus::EnCours;
+    #[ORM\Column(length: 32, enumType: SignalementStatus::class, options: ['default' => 'en_attente_validation'])]
+    private SignalementStatus $status = SignalementStatus::EnAttenteValidation;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private int $prioriteScore = 0;
+
+    #[ORM\Column(options: ['default' => 100])]
+    private int $confianceScore = 100;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $reviewedBy = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $reviewedAt = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $reviewNote = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $suggestion = null;
 
     #[ORM\Column(length: 64, unique: true)]
     private ?string $accessToken = null;
@@ -162,6 +181,78 @@ class Signalement
     public function setAccessToken(string $accessToken): static
     {
         $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    public function getPrioriteScore(): int
+    {
+        return $this->prioriteScore;
+    }
+
+    public function setPrioriteScore(int $prioriteScore): static
+    {
+        $this->prioriteScore = $prioriteScore;
+
+        return $this;
+    }
+
+    public function getConfianceScore(): int
+    {
+        return $this->confianceScore;
+    }
+
+    public function setConfianceScore(int $confianceScore): static
+    {
+        $this->confianceScore = $confianceScore;
+
+        return $this;
+    }
+
+    public function getReviewedBy(): ?User
+    {
+        return $this->reviewedBy;
+    }
+
+    public function setReviewedBy(?User $reviewedBy): static
+    {
+        $this->reviewedBy = $reviewedBy;
+
+        return $this;
+    }
+
+    public function getReviewedAt(): ?\DateTimeImmutable
+    {
+        return $this->reviewedAt;
+    }
+
+    public function setReviewedAt(?\DateTimeImmutable $reviewedAt): static
+    {
+        $this->reviewedAt = $reviewedAt;
+
+        return $this;
+    }
+
+    public function getReviewNote(): ?string
+    {
+        return $this->reviewNote;
+    }
+
+    public function setReviewNote(?string $reviewNote): static
+    {
+        $this->reviewNote = $reviewNote;
+
+        return $this;
+    }
+
+    public function getSuggestion(): ?string
+    {
+        return $this->suggestion;
+    }
+
+    public function setSuggestion(?string $suggestion): static
+    {
+        $this->suggestion = $suggestion;
 
         return $this;
     }
