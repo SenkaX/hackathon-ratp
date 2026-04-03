@@ -50,6 +50,9 @@ class Signalement
     #[ORM\Column(options: ['default' => 100])]
     private int $confianceScore = 100;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $assignedRole = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'reviewed_by_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?User $reviewedBy = null;
@@ -62,6 +65,12 @@ class Signalement
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $suggestion = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $suggestionValidated = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $suggestionHumanResponse = null;
 
     #[ORM\Column(length: 64, unique: true)]
     private ?string $accessToken = null;
@@ -209,6 +218,18 @@ class Signalement
         return $this;
     }
 
+    public function getAssignedRole(): ?string
+    {
+        return $this->assignedRole;
+    }
+
+    public function setAssignedRole(?string $assignedRole): static
+    {
+        $this->assignedRole = $assignedRole;
+
+        return $this;
+    }
+
     public function getReviewedBy(): ?User
     {
         return $this->reviewedBy;
@@ -253,6 +274,30 @@ class Signalement
     public function setSuggestion(?string $suggestion): static
     {
         $this->suggestion = $suggestion;
+
+        return $this;
+    }
+
+    public function getSuggestionValidated(): ?bool
+    {
+        return $this->suggestionValidated;
+    }
+
+    public function setSuggestionValidated(?bool $suggestionValidated): static
+    {
+        $this->suggestionValidated = $suggestionValidated;
+
+        return $this;
+    }
+
+    public function getSuggestionHumanResponse(): ?string
+    {
+        return $this->suggestionHumanResponse;
+    }
+
+    public function setSuggestionHumanResponse(?string $suggestionHumanResponse): static
+    {
+        $this->suggestionHumanResponse = $suggestionHumanResponse;
 
         return $this;
     }

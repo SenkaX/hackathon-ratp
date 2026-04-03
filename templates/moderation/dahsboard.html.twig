@@ -4,12 +4,11 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         .db-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #00c4b3;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -82,12 +81,12 @@
         .db-nav a.active,
         .db-nav a:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #00a396;
         }
 
         .db-nav a.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #00a396;
             font-weight: 700;
         }
 
@@ -118,7 +117,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -151,7 +150,7 @@
 
         .db-filter-btn {
             border: 0;
-            background: #2f4c99;
+            background: #00c4b3;
             color: #fff;
             border-radius: 9px;
             padding: 10px 18px;
@@ -162,7 +161,7 @@
         }
 
         .db-filter-btn:hover {
-            background: #253a75;
+            background: #00a396;
         }
 
         .db-kpis {
@@ -194,7 +193,7 @@
         .db-kpi-value {
             font-size: 2rem;
             font-weight: 800;
-            color: #2f4c99;
+            color: #00c4b3;
             margin-bottom: 6px;
         }
 
@@ -240,7 +239,7 @@
         }
 
         .bar {
-            background: linear-gradient(180deg, #4f8df4, #3272d9);
+            background: linear-gradient(180deg, #4f8df4, #00a396);
             border-radius: 8px 8px 0 0;
             min-height: 20px;
         }
@@ -461,6 +460,111 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #00c4b3;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .db-shell,
+        .db-layout {
+            background: var(--bg) !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .db-sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .db-brand-logo,
+        .db-avatar {
+            background: var(--azur) !important;
+        }
+
+        .db-nav a {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .db-nav a:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .db-nav a.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .db-top {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .db-head-row h1,
+        .db-kpi-value,
+        .db-card h2 {
+            color: var(--text) !important;
+        }
+
+        .db-head-row p,
+        .db-kpi-label,
+        .tickets-head span,
+        .recent-meta,
+        .recent-ticket p,
+        .recent-id,
+        .hot-note {
+            color: var(--text-dim) !important;
+        }
+
+        .db-filter-btn {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .db-filter-btn:hover {
+            background: var(--jade-dim) !important;
+        }
+
+        .db-kpi,
+        .db-card,
+        .recent-ticket,
+        .hot-item {
+            background: #fff !important;
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+        }
+
+        .recent-tags span {
+            background: #edf6f4 !important;
+            color: var(--jade-dim) !important;
+            border: 1px solid #d2eee9;
+        }
+
+        .hot-count {
+            color: var(--coq) !important;
+        }
+
+        .bar {
+            background: linear-gradient(180deg, var(--azur), #00a396) !important;
+        }
+
+        .legend-item {
+            color: var(--text-dim) !important;
+        }
     </style>
 
     <section class="db-shell">
@@ -477,7 +581,7 @@
                 <nav class="db-nav">
                     <a href="{{ path('app_moderation_dashboard') }}" class="active">Tableau de bord</a>
                     <a href="{{ path('app_moderation_tickets') }}">Vue Kanban</a>
-                    <a href="#">Projets</a>
+                    <a href="#">Centre Bus</a>
                     <a href="#">Utilisateurs</a>
                     <a href="#">Parametres</a>
                 </nav>
@@ -563,13 +667,13 @@
                                     </div>
                                     <p>{{ ticket.description }}</p>
                                     <div class="recent-meta">
-                                        <span>📍 {{ ticket.location }}</span>
-                                        <span>📨 {{ ticket.source }}</span>
-                                        <span>🕐 {{ ticket.date }}</span>
+                                        <span>{{ ticket.location }}</span>
+                                        <span>{{ ticket.source }}</span>
+                                        <span>{{ ticket.date }}</span>
                                     </div>
                                     <div class="recent-foot">
-                                        <span>🛡️ Confiance: {{ ticket.confidence }}%</span>
-                                        <span>👤 {{ ticket.assigned }}</span>
+                                        <span>Confiance: {{ ticket.confidence }}%</span>
+                                        <span>{{ ticket.assigned }}</span>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -580,7 +684,7 @@
                             {% for hot in hotspots %}
                                 <div class="hot-item">
                                     <div class="hot-item-head">
-                                        <span>📍 {{ hot.place }}</span>
+                                        <span>{{ hot.place }}</span>
                                         <span class="hot-level" style="background:{% if hot.level == 'Haute' %}#fee2e2;color:#b91c1c{% elseif hot.level == 'Moyenne' %}#fef3c7;color:#b45309{% else %}#ecfccb;color:#4d7c0f{% endif %};">{{ hot.level }}</span>
                                     </div>
                                     <div class="hot-meta">
@@ -589,7 +693,7 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <div class="hot-note">💡 Ces zones necessitent une attention particuliere aux horaires indiques.</div>
+                            <div class="hot-note">Ces zones necessitent une attention particuliere aux horaires indiques.</div>
                         </article>
                     </section>
                 </div>

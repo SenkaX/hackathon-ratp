@@ -1,0 +1,589 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carte des signalements{% endblock %}
+
+{% block body %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+    <style>
+
+        .map-shell {
+            background: linear-gradient(140deg, #f4f7fb 0%, #e9f0f9 60%, #f3f4f6 100%);
+            min-height: 100vh;
+            font-family: "Segoe UI", "Helvetica Neue", Helvetica, sans-serif;
+            color: #1f2937;
+        }
+
+        .map-layout {
+            display: grid;
+            grid-template-columns: 256px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #00c4b3;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-text strong {
+            display: block;
+            color: #111827;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 6px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 1.02rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background: #e2e8f0;
+            color: #00a396;
+        }
+
+        .sidebar-link.active {
+            background: #e0e7ff;
+            color: #00a396;
+            font-weight: 700;
+        }
+
+        .map-main {
+            min-width: 0;
+        }
+
+        .map-header {
+            padding: 24px 30px 18px;
+            border-bottom: 1px solid #d7e2f0;
+            background: rgba(255, 255, 255, 0.74);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .map-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .map-header p {
+            margin: 6px 0 0;
+            color: #64748b;
+        }
+
+        .map-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-mini {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .map-content {
+            padding: 24px 28px 30px;
+        }
+
+        .filters {
+            background: #ffffff;
+            border: 1px solid #dbe4ef;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 960px) {
+            .filters {
+                grid-template-columns: 1.2fr 1fr;
+                align-items: end;
+            }
+        }
+
+        .filter-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            margin: 0;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .radio-inline {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .radio-chip {
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 6px 14px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .radio-chip:has(input:checked) {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            color: #ffffff;
+        }
+
+        .radio-chip input {
+            display: none;
+        }
+
+        .filter-select {
+            max-width: 340px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #fff;
+            font-size: 0.95rem;
+        }
+
+        #moderation-map {
+            width: 100%;
+            min-height: 600px;
+            border: 1px solid #dbe4ef;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 16px 38px rgba(19, 34, 64, 0.10);
+            overflow: hidden;
+            background: #e2e8f0;
+        }
+
+        .map-legend {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+
+        .map-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            border: 1px solid #dbe4ef;
+            border-radius: 999px;
+            padding: 5px 10px;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+        }
+
+        .loading {
+            margin-top: 12px;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .map-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .map-content {
+                padding: 16px;
+            }
+
+            #moderation-map {
+                min-height: 480px;
+            }
+        }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #00c4b3;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .map-shell,
+        .map-layout {
+            background: var(--bg) !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo {
+            background: var(--azur) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .map-header {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .map-header h1 {
+            color: var(--text) !important;
+        }
+
+        .map-header p,
+        .filter-label,
+        .loading,
+        .brand-text span {
+            color: var(--text-dim) !important;
+        }
+
+        .btn-mini {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+            background: #fff !important;
+        }
+
+        .btn-mini:hover {
+            border-color: var(--azur) !important;
+            color: var(--azur) !important;
+            background: #f4f8ff !important;
+        }
+
+        .filters {
+            background: #fff !important;
+            border-color: var(--border) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05);
+        }
+
+        .radio-chip {
+            border-color: var(--border) !important;
+            background: #fff !important;
+            color: var(--text-dim) !important;
+        }
+
+        .radio-chip:has(input:checked) {
+            background: var(--jade) !important;
+            border-color: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .filter-select {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+        }
+
+        #moderation-map {
+            border-color: var(--border) !important;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 10px 28px rgba(0, 34, 68, 0.08) !important;
+        }
+
+        .map-legend span {
+            border-color: var(--border) !important;
+            color: var(--text-dim) !important;
+            background: #fff !important;
+        }
+    </style>
+
+    <section class="map-shell">
+        <div class="map-layout">
+            {% include 'moderation/_sidebar.html.twig' with { active: 'map' } %}
+
+            <div class="map-main">
+                <header class="map-header">
+                    <div>
+                        <h1>Carte des hotspots de signalement</h1>
+                        <p>Visualisation des arrets avec intensite calculee sur la gravite cumulee.</p>
+                    </div>
+                    <div class="map-actions">
+                        <a class="btn-mini" href="{{ path('app_moderation_tickets') }}">Voir les tickets</a>
+                    </div>
+                </header>
+
+                <div class="map-content">
+                    <section class="filters">
+                        <div class="filter-block">
+                            <p class="filter-label">Periode</p>
+                            <div class="radio-inline">
+                                <label class="radio-chip">
+                                    <input type="radio" name="period" value="7" {{ filters.period == '7' ? 'checked' : '' }}>
+                                    7 jours
+                                </label>
+                                <label class="radio-chip">
+                                    <input type="radio" name="period" value="30" {{ filters.period == '30' ? 'checked' : '' }}>
+                                    30 jours
+                                </label>
+                                <label class="radio-chip">
+                                    <input type="radio" name="period" value="all" {{ filters.period == 'all' ? 'checked' : '' }}>
+                                    Tout
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-block">
+                            <p class="filter-label">Motif</p>
+                            <select id="motif-filter" class="filter-select">
+                                <option value="">Tous les motifs</option>
+                                {% for motif in motifs %}
+                                    <option value="{{ motif.value }}" {{ filters.motif == motif.value ? 'selected' : '' }}>{{ motif.label() }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </section>
+
+                    <div id="moderation-map"></div>
+                    <div id="map-loading" class="loading">Chargement des donnees de signalement...</div>
+                    <div class="map-legend">
+                        <span><i class="dot" style="background:#94a3b8;"></i> Arret sans signalement</span>
+                        <span><i class="dot" style="background:#ef4444;"></i> Arret avec signalements</span>
+                        <span><i class="dot" style="background:#f59e0b;"></i> Intensite heatmap</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script>
+        const dataEndpoint = '{{ path('app_moderation_tickets_map_data') }}';
+        const ticketsUrl = '{{ path('app_moderation_tickets') }}';
+        const motifLabels = {{ motifLabels|json_encode|raw }};
+
+        const map = L.map('moderation-map').setView([48.91, 2.30], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const markerLayer = L.layerGroup().addTo(map);
+        let heatLayer = null;
+
+        const periodInputs = Array.from(document.querySelectorAll('input[name="period"]'));
+        const motifSelect = document.getElementById('motif-filter');
+        const loadingText = document.getElementById('map-loading');
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function selectedPeriod() {
+            return periodInputs.find((input) => input.checked)?.value || 'all';
+        }
+
+        function signalementLine(stop, signalement) {
+            const motif = motifLabels[signalement.motif] || signalement.motif;
+            const status = (signalement.status || '').replaceAll('_', ' ');
+            const dateValue = signalement.submitted_at ? new Date(signalement.submitted_at) : null;
+            const dateLabel = dateValue && !Number.isNaN(dateValue.valueOf())
+                ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(dateValue)
+                : 'Date inconnue';
+
+            const href = `${ticketsUrl}?stop=${encodeURIComponent(stop.stop_id)}`;
+
+            return `<li><a href="${href}">${escapeHtml(motif)} | G${signalement.gravite} | ${escapeHtml(status)} | ${escapeHtml(dateLabel)}</a></li>`;
+        }
+
+        function popupHtml(stop) {
+            const lines = (stop.signalements || []).slice(0, 8).map((s) => signalementLine(stop, s));
+            const allLink = `${ticketsUrl}?stop=${encodeURIComponent(stop.stop_id)}`;
+
+            return `
+                <div style="min-width:280px;max-width:340px;">
+                    <h3 style="margin:0 0 8px;font-size:1rem;">${escapeHtml(stop.label || stop.stop_id)}</h3>
+                    <p style="margin:0 0 6px;"><strong>Score:</strong> ${stop.score || 0}</p>
+                    <p style="margin:0 0 8px;"><strong>Signalements:</strong> ${stop.count || 0}</p>
+                    ${lines.length > 0
+                        ? `<ul style="padding-left:18px;margin:0 0 8px;display:flex;flex-direction:column;gap:4px;">${lines.join('')}</ul>`
+                        : '<p style="margin:0;color:#64748b;">Aucun signalement pour ces filtres.</p>'}
+                    <a href="${allLink}">Voir tous les tickets de cet arret</a>
+                </div>
+            `;
+        }
+
+        async function loadHotspots() {
+            loadingText.textContent = 'Chargement des donnees de signalement...';
+
+            const params = new URLSearchParams({
+                period: selectedPeriod(),
+                motif: motifSelect.value,
+            });
+
+            const response = await fetch(`${dataEndpoint}?${params.toString()}`);
+            if (!response.ok) {
+                throw new Error('Impossible de charger les donnees de la carte.');
+            }
+
+            return response.json();
+        }
+
+        function renderMap(stops) {
+            markerLayer.clearLayers();
+            if (heatLayer !== null) {
+                map.removeLayer(heatLayer);
+                heatLayer = null;
+            }
+
+            const withCoords = (stops || []).filter((stop) => typeof stop.latitude === 'number' && typeof stop.longitude === 'number');
+            const maxScore = Math.max(1, ...withCoords.map((stop) => stop.score || 0));
+
+            const heatPoints = [];
+
+            for (const stop of withCoords) {
+                const score = Number(stop.score || 0);
+                const hasSignalement = score > 0;
+                const radius = hasSignalement ? Math.min(20 + (score * 3), 80) : 12;
+                const opacity = hasSignalement ? Math.min(0.3 + (score * 0.05), 0.85) : 0.26;
+
+                const marker = L.circleMarker([stop.latitude, stop.longitude], {
+                    radius,
+                    color: hasSignalement ? '#dc2626' : '#94a3b8',
+                    fillColor: hasSignalement ? '#ef4444' : '#cbd5e1',
+                    fillOpacity: opacity,
+                    weight: 2,
+                });
+
+                marker.bindPopup(popupHtml(stop));
+                marker.addTo(markerLayer);
+
+                if (score > 0) {
+                    const normalized = Math.min(1, Math.max(0.1, score / maxScore));
+                    heatPoints.push([stop.latitude, stop.longitude, normalized]);
+                }
+            }
+
+            if (heatPoints.length > 0) {
+                heatLayer = L.heatLayer(heatPoints, {
+                    radius: 34,
+                    blur: 26,
+                    maxZoom: 17,
+                    gradient: {
+                        0.2: '#60a5fa',
+                        0.45: '#f59e0b',
+                        0.7: '#f97316',
+                        1.0: '#dc2626',
+                    },
+                }).addTo(map);
+            }
+
+            loadingText.textContent = `${withCoords.length} arrets affiches.`;
+        }
+
+        async function refresh() {
+            try {
+                const payload = await loadHotspots();
+                renderMap(payload);
+            } catch (error) {
+                loadingText.textContent = error instanceof Error ? error.message : 'Erreur de chargement.';
+            }
+        }
+
+        for (const input of periodInputs) {
+            input.addEventListener('change', refresh);
+        }
+        motifSelect.addEventListener('change', refresh);
+
+        refresh();
+    </script>
+{% endblock %}

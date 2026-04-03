@@ -3,9 +3,134 @@
 {% block title %}Signalement envoye{% endblock %}
 
 {% block body %}
-    <section class="card">
-        <h1>Merci, votre signalement a bien ete envoye.</h1>
-        <p class="muted">Vous allez recevoir un email contenant votre lien de suivi securise.</p>
-        <a class="btn btn-link" href="{{ path('app_signalement') }}">Envoyer un autre signalement</a>
+    <style>
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            color: var(--text);
+        }
+
+        .confirm-shell {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 28px 16px;
+            background: radial-gradient(circle at 0% 0%, #eef8f6 0%, #ffffff 56%), radial-gradient(circle at 100% 100%, #edf3ff 0%, transparent 44%);
+        }
+
+        .confirm-card {
+            width: min(720px, 100%);
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 34, 68, 0.08);
+            overflow: hidden;
+        }
+
+        .confirm-head {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            background: #fff;
+        }
+
+        .confirm-head::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--azur) 0%, var(--jade) 55%, var(--coq) 100%);
+            opacity: 0.45;
+        }
+
+        .confirm-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            font-weight: 800;
+        }
+
+        .confirm-brand img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            padding: 4px;
+        }
+
+        .confirm-body {
+            padding: 22px 24px;
+        }
+
+        .confirm-body h1 {
+            margin: 0 0 10px;
+            font-size: 1.45rem;
+        }
+
+        .confirm-body p {
+            margin: 0;
+            color: var(--text-dim);
+        }
+
+        .confirm-actions {
+            margin-top: 18px;
+        }
+
+        .btn {
+            display: inline-block;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            border: 1px solid var(--border);
+            color: var(--azur);
+            background: transparent;
+        }
+
+        .btn:hover {
+            border-color: var(--azur);
+            background: #f4f8ff;
+        }
+    </style>
+
+    <section class="confirm-shell">
+        <div class="confirm-card">
+            <header class="confirm-head">
+                <div class="confirm-brand">
+                    <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/0/01/RATP.svg/1280px-RATP.svg.png?_=20211228035138" alt="Logo RATP">
+                    Signalement public
+                </div>
+            </header>
+            <div class="confirm-body">
+                <h1>Merci, votre signalement a bien ete envoye.</h1>
+                <p>Vous allez recevoir un email contenant votre lien de suivi securise.</p>
+                <div class="confirm-actions">
+                    <a class="btn" href="{{ path('app_signalement') }}">Envoyer un autre signalement</a>
+                </div>
+            </div>
+        </div>
     </section>
 {% endblock %}

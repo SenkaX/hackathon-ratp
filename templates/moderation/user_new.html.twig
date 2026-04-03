@@ -1,0 +1,381 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel utilisateur - Moderation{% endblock %}
+
+{% block body %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        .user-form-shell {
+            min-height: 100vh;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .user-form-layout {
+            display: grid;
+            grid-template-columns: 256px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #f8fafc;
+            border-right: 1px solid #e5e7eb;
+            padding: 22px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: #00c4b3;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .brand-text strong {
+            display: block;
+            color: #111827;
+            font-size: 1.05rem;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 6px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #334155;
+            font-size: 1.02rem;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar-link:hover {
+            background: #e2e8f0;
+            color: #00a396;
+        }
+
+        .sidebar-link.active {
+            background: #e0e7ff;
+            color: #00a396;
+            font-weight: 700;
+        }
+
+        .user-form-main {
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .top-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            background: #009aa6;
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+        }
+
+        .page {
+            padding: 28px 32px 40px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 1.85rem;
+            color: #111827;
+        }
+
+        .hero p {
+            margin: 8px 0 0;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            background: #fff;
+            border: 1px solid #dbe3f0;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            padding: 22px 24px 16px;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .panel-head h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #111827;
+        }
+
+        .panel-head p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .form-body {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .fields {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            background: #fdfefe;
+        }
+
+        .fields {
+            padding: 18px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field label {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .field input,
+        .field select {
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            background: #fff;
+            color: #111827;
+        }
+
+        .field-help {
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        .errors {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        .errors ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #3556a8;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            color: #334155;
+        }
+
+        @media (max-width: 1100px) {
+            .form-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .user-form-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .page {
+                padding: 20px;
+            }
+
+            .hero {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <section class="user-form-shell">
+        <div class="user-form-layout">
+            {% include 'moderation/_sidebar.html.twig' with { active: 'users' } %}
+
+            <div class="user-form-main">
+                <header class="topbar">
+                    <div class="top-user">
+                        <div>
+                            Marie Dupont
+                            <div style="font-size:0.82rem;color:#64748b;font-weight:500;">Admin</div>
+                        </div>
+                        <div class="avatar">O</div>
+                    </div>
+                </header>
+
+                <main class="page">
+                    <div class="hero">
+                        <div>
+                            <h1>Nouveau utilisateur</h1>
+                            <p>Créer un compte de moderation avec un role et un mot de passe securise.</p>
+                        </div>
+                        <a href="{{ path('app_moderation_users') }}" class="back-link">Retour aux utilisateurs</a>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2>Informations de compte</h2>
+                            <p>Le nouvel utilisateur sera ajoute immediatement a la liste apres enregistrement.</p>
+                        </div>
+
+                        <div class="form-body">
+                            <form method="post" class="fields">
+                                {% if errors is not empty %}
+                                    <div class="errors">
+                                        <strong>Veuillez corriger les points suivants :</strong>
+                                        <ul>
+                                            {% for error in errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+
+                                <div class="field">
+                                    <label for="email">Email</label>
+                                    <input id="email" name="email" type="email" value="{{ formData.email }}" placeholder="prenom.nom@ratp.fr" required>
+                                </div>
+
+                                <div class="field">
+                                    <label for="role">Role</label>
+                                    <select id="role" name="role" required>
+                                        {% for value, label in roleOptions %}
+                                            <option value="{{ value }}" {{ formData.role == value ? 'selected' : '' }}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label for="password">Mot de passe</label>
+                                    <input id="password" name="password" type="password" minlength="8" required>
+                                    <div class="field-help">Au moins 8 caracteres.</div>
+                                </div>
+
+                                <div class="field">
+                                    <label for="password_confirm">Confirmation</label>
+                                    <input id="password_confirm" name="password_confirm" type="password" minlength="8" required>
+                                </div>
+
+                                <div class="actions">
+                                    <a href="{{ path('app_moderation_users') }}" class="btn-secondary">Annuler</a>
+                                    <button type="submit" class="btn-primary">Creer l'utilisateur</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+{% endblock %}

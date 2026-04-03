@@ -4,12 +4,11 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         .users-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #00c4b3;
             color: #fff;
             font-weight: 700;
             font-size: 1.4rem;
@@ -83,12 +82,12 @@
 
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #00a396;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #00a396;
             font-weight: 700;
         }
 
@@ -131,7 +130,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -170,6 +169,10 @@
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
         }
 
         .users-grid {
@@ -202,7 +205,7 @@
             width: 64px;
             height: 64px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #2f4c99, #5b8def);
+            background: linear-gradient(135deg, #00c4b3, #00c4b3);
             color: #fff;
             display: grid;
             place-items: center;
@@ -321,6 +324,109 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #00c4b3;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .users-shell,
+        .users-layout {
+            background: var(--bg) !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo,
+        .avatar,
+        .user-icon {
+            background: var(--azur) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .topbar {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .search {
+            border-color: var(--border) !important;
+            background-color: #fff !important;
+            color: var(--text-dim) !important;
+        }
+
+        .header-row h1,
+        .user-name,
+        .stat-value {
+            color: var(--text) !important;
+        }
+
+        .header-row p,
+        .user-email,
+        .user-desc,
+        .stat-label,
+        .brand-text span,
+        .top-user {
+            color: var(--text-dim) !important;
+        }
+
+        .btn-primary {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .btn-primary:hover {
+            background: var(--jade-dim) !important;
+        }
+
+        .user-card {
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+            border-radius: 10px !important;
+        }
+
+        .system-note {
+            background: rgba(0, 60, 166, 0.06) !important;
+            border-color: rgba(0, 60, 166, 0.2) !important;
+        }
+
+        .card-footer {
+            background: #fbfdff !important;
+            border-top-color: var(--border) !important;
+        }
+
+        .card-footer a {
+            color: var(--azur) !important;
+        }
     </style>
 
     <section class="users-shell">
@@ -340,12 +446,16 @@
                 </header>
 
                 <main class="page">
+                    {% for message in app.flashes('success') %}
+                        <div style="margin-bottom:16px;padding:12px 14px;border-radius:12px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">{{ message }}</div>
+                    {% endfor %}
+
                     <div class="header-row">
                         <div>
                             <h1>Utilisateurs</h1>
                             <p>Gestion des accès et rôles</p>
                         </div>
-                        <button class="btn-primary">+ Nouvel utilisateur</button>
+                        <a href="{{ path('app_moderation_user_new') }}" class="btn-primary">+ Nouvel utilisateur</a>
                     </div>
 
                     <section class="users-grid">
@@ -353,34 +463,34 @@
                             <article class="user-card">
                                 <div class="user-body">
                                     <div class="user-head">
-                                        <div class="user-icon">◯</div>
+                                        <div class="user-icon">{{ u.name|slice(0, 1)|upper }}</div>
                                         <div>
                                             <h2 class="user-name">{{ u.name }}</h2>
                                             <span class="role-chip" style="{% if u.role == 'Admin' %}background:#fee2e2;color:#dc2626{% elseif u.role == 'Stagiaire' %}background:#dcfce7;color:#16a34a{% elseif u.role == 'RH' %}background:#e0e7ff;color:#4f46e5{% else %}background:#e0e7ff;color:#4f46e5{% endif %};">{{ u.role }}</span>
-                                            <div class="user-email">✉ {{ u.email }}</div>
+                                            <div class="user-email"> {{ u.email }}</div>
                                         </div>
                                     </div>
 
                                     <div class="user-desc">{{ u.description }}</div>
 
                                     {% if u.systemNote %}
-                                        <div class="system-note">🤖 {{ u.systemNote }}</div>
+                                        <div class="system-note"> {{ u.systemNote }}</div>
                                     {% else %}
                                         <div class="stats">
                                             <div class="stat-box s-assigned">
-                                                <div class="stat-label">⟡ Assignés</div>
+                                                <div class="stat-label">Assignés</div>
                                                 <div class="stat-value">{{ u.assigned }}</div>
                                             </div>
                                             <div class="stat-box s-created">
-                                                <div class="stat-label">⟡ Créés</div>
+                                                <div class="stat-label">Créés</div>
                                                 <div class="stat-value">{{ u.created }}</div>
                                             </div>
                                             <div class="stat-box s-pending">
-                                                <div class="stat-label">⟡ En attente</div>
+                                                <div class="stat-label">En attente</div>
                                                 <div class="stat-value">{{ u.pending }}</div>
                                             </div>
                                             <div class="stat-box s-progress">
-                                                <div class="stat-label">⟡ En cours</div>
+                                                <div class="stat-label">En cours</div>
                                                 <div class="stat-value">{{ u.inProgress }}</div>
                                             </div>
                                         </div>

@@ -4,12 +4,11 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         .db-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #00c4b3;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -85,12 +84,12 @@
         .sidebar-link.active,
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #00a396;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #00a396;
             font-weight: 700;
         }
 
@@ -121,7 +120,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -154,7 +153,7 @@
 
         .db-filter-btn {
             border: 0;
-            background: #2f4c99;
+            background: #00c4b3;
             color: #fff;
             border-radius: 9px;
             padding: 10px 18px;
@@ -165,7 +164,62 @@
         }
 
         .db-filter-btn:hover {
-            background: #253a75;
+            background: #00a396;
+            transform: translateY(-1px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes growBar {
+            from {
+                transform: scaleY(0.2);
+                opacity: 0;
+            }
+            to {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pieReveal {
+            from {
+                opacity: 0;
+                transform: rotate(-80deg) scale(0.78);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        @keyframes pieFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
         .db-kpis {
@@ -181,6 +235,21 @@
             border-radius: 12px;
             padding: 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.55s ease both;
+        }
+
+        .db-kpi:nth-child(2) { animation-delay: 0.05s; }
+        .db-kpi:nth-child(3) { animation-delay: 0.10s; }
+        .db-kpi:nth-child(4) { animation-delay: 0.15s; }
+        .db-kpi:nth-child(5) { animation-delay: 0.20s; }
+        .db-kpi:nth-child(6) { animation-delay: 0.25s; }
+
+        .db-kpi:hover,
+        .db-card:hover,
+        .recent-ticket:hover,
+        .hot-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
         }
 
         .db-kpi-icon {
@@ -194,10 +263,20 @@
             margin-bottom: 14px;
         }
 
+        .db-kpi-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         .db-kpi-value {
             font-size: 2rem;
             font-weight: 800;
-            color: #2f4c99;
+            color: #00c4b3;
             margin-bottom: 6px;
         }
 
@@ -207,6 +286,168 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
+        }
+
+        .db-evolution {
+            margin-top: 18px;
+        }
+
+        .db-evolution-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .db-evolution-head h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            color: #0f172a;
+        }
+
+        .db-evolution-sub {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .db-evolution-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .db-period {
+            display: inline-block;
+            border: 1px solid #d7e2ef;
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            padding: 6px 10px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .db-period.active {
+            background: var(--azur);
+            border-color: var(--azur);
+            color: #fff;
+        }
+
+        .db-trend {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #16a34a;
+            white-space: nowrap;
+        }
+
+        .db-trend.down {
+            color: #dc2626;
+        }
+
+        .db-line-chart {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fcfdff;
+            padding: 12px;
+        }
+
+        .db-line-chart-wrap {
+            display: grid;
+            grid-template-columns: 36px 1fr;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .db-line-chart-main {
+            position: relative;
+        }
+
+        .db-line-y-axis {
+            color: #7e8b9b;
+            font-size: 0.76rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 2px 0;
+        }
+
+        .db-line-chart svg {
+            width: 100%;
+            height: 280px;
+            display: block;
+        }
+
+        .db-line-grid {
+            stroke: #dbe3ee;
+            stroke-dasharray: 4 4;
+            stroke-width: 1;
+        }
+
+        .db-line-path {
+            fill: none;
+            stroke: var(--azur);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .db-hover-line {
+            stroke: #94a3b8;
+            stroke-width: 1;
+            opacity: 0.8;
+            stroke-dasharray: 4 4;
+            display: none;
+        }
+
+        .db-hover-dot {
+            fill: #f59e0b;
+            stroke: #fff;
+            stroke-width: 2;
+            display: none;
+        }
+
+        .db-line-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 150px;
+            display: none;
+            z-index: 3;
+        }
+
+        .db-line-tooltip-date {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .db-line-tooltip-value {
+            font-size: 1.05rem;
+            color: #1e3a8a;
+        }
+
+        .db-line-labels {
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            gap: 4px;
+            color: #7e8b9b;
+            font-size: 0.76rem;
+        }
+
+        .db-line-labels span {
+            text-align: center;
         }
 
         .db-grid-2 {
@@ -222,6 +463,7 @@
             border-radius: 12px;
             padding: 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            animation: fadeInUp 0.6s ease both;
         }
 
         .db-card h2 {
@@ -229,33 +471,151 @@
             font-size: 1.15rem;
         }
 
-        .bars {
-            height: 260px;
+        .category-chart {
+            position: relative;
+            height: 370px;
+            padding: 16px 14px 0 46px;
+        }
+
+        .chart-grid {
+            position: absolute;
+            inset: 16px 14px 86px 46px;
+            border-left: 2px solid #64748b;
+            border-bottom: 2px solid #64748b;
+        }
+
+        .grid-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        .grid-line:nth-child(1) { top: 0; }
+        .grid-line:nth-child(2) { top: 25%; }
+        .grid-line:nth-child(3) { top: 50%; }
+        .grid-line:nth-child(4) { top: 75%; }
+
+        .y-axis-labels {
+            position: absolute;
+            left: 6px;
+            top: 16px;
+            bottom: 86px;
+            width: 36px;
+            color: #64748b;
+            font-size: 0.75rem;
             display: flex;
-            align-items: end;
-            gap: 10px;
-            padding-top: 16px;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .y-axis-labels span {
+            right: 0;
+            text-align: right;
+            line-height: 1;
+        }
+
+        .y-axis-labels span:nth-child(1) { order: 1; }
+        .y-axis-labels span:nth-child(2) { order: 2; }
+        .y-axis-labels span:nth-child(3) { order: 3; }
+        .y-axis-labels span:nth-child(4) { order: 4; }
+        .y-axis-labels span:nth-child(5) { order: 5; }
+
+        .bars {
+            position: absolute;
+            left: 52px;
+            right: 18px;
+            bottom: 86px;
+            top: 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
         }
 
         .bar-wrap {
             flex: 1;
-            text-align: center;
+            min-width: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            position: relative;
+            overflow: visible;
+            cursor: pointer;
         }
 
         .bar {
-            background: linear-gradient(180deg, #4f8df4, #3272d9);
-            border-radius: 8px 8px 0 0;
-            min-height: 20px;
+            width: 100%;
+            max-width: 64px;
+            background: linear-gradient(180deg, #00c4b3, #00a396);
+            border-radius: 10px 10px 0 0;
+            min-height: 14px;
+            transform-origin: bottom;
+            animation: growBar 0.7s ease-out both;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .bar-wrap.active .bar,
+        .bar-wrap:hover .bar {
+            transform: translateY(-4px);
+            filter: brightness(1.05);
         }
 
         .bar-label {
-            font-size: 0.72rem;
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 88px;
+            text-align: center;
+            font-size: 0.74rem;
             color: #64748b;
-            margin-top: 6px;
-            transform: rotate(-36deg);
-            transform-origin: top left;
-            white-space: nowrap;
-            display: inline-block;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+            min-height: 2.4em;
+        }
+
+        .category-hover-line {
+            position: absolute;
+            top: 16px;
+            bottom: 86px;
+            width: 1px;
+            border-left: 1px dashed #94a3b8;
+            opacity: 0.8;
+            display: none;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .category-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 170px;
+            display: none;
+            z-index: 3;
+        }
+
+        .category-tooltip-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .category-tooltip-value {
+            font-size: 1rem;
+            color: #1e3a8a;
         }
 
         .pie-wrap {
@@ -263,6 +623,7 @@
             grid-template-columns: 320px 1fr;
             align-items: center;
             gap: 18px;
+            position: relative;
         }
 
         .pie {
@@ -270,16 +631,17 @@
             height: 230px;
             border-radius: 50%;
             margin: 0 auto;
-            background: conic-gradient(
-                #3b82f6 0% 20%,
-                #8b5cf6 20% 40%,
-                #ec4899 40% 70%,
-                #10b981 70% 80%,
-                #ef4444 80% 90%,
-                #f59e0b 90% 100%
-            );
+            background: conic-gradient(#3b82f6 0% 20%, #8b5cf6 20% 40%, #ec4899 40% 70%, #10b981 70% 80%, #ef4444 80% 90%, #f59e0b 90% 100%);
             border: 8px solid #fff;
             box-shadow: 0 2px 8px rgba(2, 6, 23, 0.14);
+            animation: pieReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both, pieFloat 5s ease-in-out 1s infinite;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .pie.active {
+            transform: scale(1.02);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
         }
 
         .legend {
@@ -293,6 +655,13 @@
             align-items: center;
             gap: 10px;
             color: #334155;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .legend-item.active {
+            color: #1f2937;
+            transform: translateX(3px);
+            font-weight: 700;
         }
 
         .dot {
@@ -300,6 +669,31 @@
             height: 11px;
             border-radius: 999px;
             flex-shrink: 0;
+        }
+
+        .pie-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 190px;
+            display: none;
+            z-index: 3;
+        }
+
+        .pie-tooltip-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .pie-tooltip-value {
+            font-size: 1rem;
+            color: #1e3a8a;
         }
 
         .db-grid-bottom {
@@ -327,6 +721,19 @@
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.6s ease both;
+        }
+
+        .recent-ticket-link {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .recent-ticket-link:focus-visible {
+            outline: 2px solid #00c4b3;
+            outline-offset: 2px;
         }
 
         .recent-top {
@@ -399,6 +806,8 @@
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeInUp 0.6s ease both;
         }
 
         .hot-item-head {
@@ -434,6 +843,18 @@
             color: #64748b;
         }
 
+        .legend-item {
+            transition: transform 0.2s;
+        }
+
+        .legend-item:hover {
+            transform: translateX(3px);
+        }
+
+        .bar-wrap:hover .bar {
+            filter: brightness(1.04);
+        }
+
         @media (max-width: 1300px) {
             .db-kpis {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -464,6 +885,111 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #00c4b3;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .db-shell,
+        .db-layout {
+            background: var(--bg) !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo,
+        .db-avatar {
+            background: var(--azur) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .db-top {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .db-head-row h1,
+        .db-kpi-value,
+        .db-card h2 {
+            color: var(--text) !important;
+        }
+
+        .db-head-row p,
+        .db-kpi-label,
+        .tickets-head span,
+        .recent-meta,
+        .recent-ticket p,
+        .recent-id,
+        .hot-note {
+            color: var(--text-dim) !important;
+        }
+
+        .db-filter-btn {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .db-filter-btn:hover {
+            background: var(--jade-dim) !important;
+        }
+
+        .db-kpi,
+        .db-card,
+        .recent-ticket,
+        .hot-item {
+            background: #fff !important;
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+        }
+
+        .recent-tags span {
+            background: #edf6f4 !important;
+            color: var(--jade-dim) !important;
+            border: 1px solid #d2eee9;
+        }
+
+        .hot-count {
+            color: var(--coq) !important;
+        }
+
+        .bar {
+            background: linear-gradient(180deg, var(--azur), #00a396) !important;
+        }
+
+        .legend-item {
+            color: var(--text-dim) !important;
+        }
     </style>
 
     <section class="db-shell">
@@ -487,43 +1013,151 @@
                             <h1>Tableau de bord</h1>
                             <p>Vue d'ensemble de la gestion des incidents</p>
                         </div>
-                        <button class="db-filter-btn">Filtres</button>
                     </div>
 
                     <section class="db-kpis">
                         {% for kpi in kpis %}
                             <article class="db-kpi">
-                                <div class="db-kpi-icon" style="background: {{ kpi.color }};">●</div>
+                                <div class="db-kpi-icon" style="background: {{ kpi.color }};">
+                                    {% if kpi.icon == 'pulse' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <polyline points="3 12 7 12 10 6 14 18 17 12 21 12"></polyline>
+                                        </svg>
+                                    {% elseif kpi.icon == 'clock' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v6l4 2"></path>
+                                        </svg>
+                                    {% elseif kpi.icon == 'trend' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <polyline points="4 14 9 9 13 13 20 6"></polyline>
+                                            <path d="M20 11V6h-5"></path>
+                                        </svg>
+                                    {% elseif kpi.icon == 'check' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <polyline points="8 12 11 15 16 9"></polyline>
+                                        </svg>
+                                    {% elseif kpi.icon == 'alert' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 8v5"></path>
+                                            <circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none"></circle>
+                                        </svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"></circle>
+                                        </svg>
+                                    {% endif %}
+                                </div>
                                 <div class="db-kpi-value">{{ kpi.value }}</div>
                                 <div class="db-kpi-label">{{ kpi.label }}</div>
                             </article>
                         {% endfor %}
                     </section>
 
+                    <section class="db-evolution db-card">
+                        <div class="db-evolution-head">
+                            <div>
+                                <h2>Evolution des tickets</h2>
+                                <div class="db-evolution-sub">{{ periodLabel }}</div>
+                            </div>
+                            <div class="db-evolution-meta">
+                                <a class="db-period {{ selectedPeriod == '30d' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '30d'}) }}">30j</a>
+                                <a class="db-period {{ selectedPeriod == '3m' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '3m'}) }}">3 mois</a>
+                                <a class="db-period {{ selectedPeriod == '6m' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '6m'}) }}">6 mois</a>
+                                <a class="db-period {{ selectedPeriod == '1y' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '1y'}) }}">1 an</a>
+                            </div>
+                        </div>
+
+                        <div class="db-line-chart">
+                            <div class="db-line-chart-wrap">
+                                <div class="db-line-y-axis" aria-hidden="true">
+                                    <span>{{ evolutionMax }}</span>
+                                    <span>{{ (evolutionMax * 0.75)|round(0, 'floor') }}</span>
+                                    <span>{{ (evolutionMax * 0.5)|round(0, 'floor') }}</span>
+                                    <span>{{ (evolutionMax * 0.25)|round(0, 'floor') }}</span>
+                                    <span>0</span>
+                                </div>
+
+                                <div class="db-line-chart-main">
+                                    <svg id="db-line-svg" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-label="Evolution des tickets">
+                                        <line class="db-line-grid" x1="0" y1="0" x2="1000" y2="0"></line>
+                                        <line class="db-line-grid" x1="0" y1="65" x2="1000" y2="65"></line>
+                                        <line class="db-line-grid" x1="0" y1="130" x2="1000" y2="130"></line>
+                                        <line class="db-line-grid" x1="0" y1="195" x2="1000" y2="195"></line>
+                                        <line class="db-line-grid" x1="0" y1="260" x2="1000" y2="260"></line>
+
+                                        <polyline class="db-line-path" points="{{ evolutionPoints }}"></polyline>
+                                        <line id="db-hover-line" class="db-hover-line" x1="0" y1="0" x2="0" y2="260"></line>
+                                        <circle id="db-hover-dot" class="db-hover-dot" cx="0" cy="0" r="6"></circle>
+                                    </svg>
+
+                                    <div id="db-line-tooltip" class="db-line-tooltip" aria-hidden="true">
+                                        <div id="db-line-tooltip-date" class="db-line-tooltip-date"></div>
+                                        <div id="db-line-tooltip-value" class="db-line-tooltip-value"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="db-line-labels" style="grid-template-columns: repeat({{ evolutionAxisLabelCount }}, minmax(0, 1fr));">
+                                {% for label in evolutionAxisLabels %}
+                                    <span>{{ label }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+
                     <section class="db-grid-2">
                         <article class="db-card">
                             <h2>Tickets par categorie</h2>
-                            <div class="bars">
-                                {% for item in categoryBars %}
-                                    <div class="bar-wrap">
-                                        <div class="bar" style="height: {{ item.value * 42 }}px;"></div>
-                                        <span class="bar-label">{{ item.label }}</span>
-                                    </div>
-                                {% endfor %}
+                            <div class="category-chart">
+                                <div class="chart-grid">
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                    <div class="grid-line"></div>
+                                </div>
+                                <div class="y-axis-labels">
+                                    <span>{{ maxCategoryValue }}</span>
+                                    <span>{{ (maxCategoryValue * 0.75)|number_format(1) }}</span>
+                                    <span>{{ (maxCategoryValue * 0.5)|number_format(1) }}</span>
+                                    <span>{{ (maxCategoryValue * 0.25)|number_format(1) }}</span>
+                                    <span>0</span>
+                                </div>
+                                <div class="bars">
+                                    {% for item in categoryBars %}
+                                        <div class="bar-wrap" data-category-label="{{ item.label|e('html_attr') }}" data-category-value="{{ item.value }}">
+                                            <div class="bar" style="height: {{ ((item.value / maxCategoryValue) * 100)|round(1) }}%;"></div>
+                                            <span class="bar-label">{{ item.label }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div id="category-hover-line" class="category-hover-line" aria-hidden="true"></div>
+                                <div id="category-tooltip" class="category-tooltip" aria-hidden="true">
+                                    <div id="category-tooltip-title" class="category-tooltip-title"></div>
+                                    <div id="category-tooltip-value" class="category-tooltip-value"></div>
+                                </div>
                             </div>
                         </article>
 
                         <article class="db-card">
                             <h2>Repartition par statut</h2>
                             <div class="pie-wrap">
-                                <div class="pie"></div>
+                                <div id="status-pie" class="pie" style="background: {{ pieGradient }};" data-status-distribution="{{ statusDistribution|json_encode|e('html_attr') }}"></div>
                                 <div class="legend">
                                     {% for item in statusDistribution %}
-                                        <div class="legend-item">
+                                        <div class="legend-item" data-status-index="{{ loop.index0 }}">
                                             <span class="dot" style="background: {{ item.color }};"></span>
-                                            <span>{{ item.label }}: {{ item.value }}%</span>
+                                            <span>{{ item.label }}: {{ item.count }} tickets ({{ item.value }}%)</span>
                                         </div>
                                     {% endfor %}
+                                </div>
+
+                                <div id="pie-tooltip" class="pie-tooltip" aria-hidden="true">
+                                    <div id="pie-tooltip-title" class="pie-tooltip-title"></div>
+                                    <div id="pie-tooltip-value" class="pie-tooltip-value"></div>
                                 </div>
                             </div>
                         </article>
@@ -536,28 +1170,53 @@
                                 <span>{{ recentTickets|length }} tickets</span>
                             </div>
                             {% for ticket in recentTickets %}
-                                <div class="recent-ticket">
-                                    <div class="recent-top">
-                                        <span class="recent-id">{{ ticket.id }}</span>
-                                        <span class="prio" style="background: {{ ticket.priorityColor }};">{{ ticket.priority }}</span>
+                                {% if ticket.viewUrl %}
+                                    <a class="recent-ticket recent-ticket-link" href="{{ ticket.viewUrl }}">
+                                        <div class="recent-top">
+                                            <span class="recent-id">{{ ticket.id }}</span>
+                                            <span class="prio" style="background: {{ ticket.priorityColor }};">{{ ticket.priority }}</span>
+                                        </div>
+                                        <h3>{{ ticket.title }}</h3>
+                                        <div class="recent-tags">
+                                            {% for tag in ticket.tags %}
+                                                <span>{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        <p>{{ ticket.description }}</p>
+                                        <div class="recent-meta">
+                                            <span>{{ ticket.location }}</span>
+                                            <span>{{ ticket.source }}</span>
+                                            <span>{{ ticket.date }}</span>
+                                        </div>
+                                        <div class="recent-foot">
+                                            <span>Confiance: {{ ticket.confidence }}%</span>
+                                            <span>{{ ticket.assigned }}</span>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <div class="recent-ticket">
+                                        <div class="recent-top">
+                                            <span class="recent-id">{{ ticket.id }}</span>
+                                            <span class="prio" style="background: {{ ticket.priorityColor }};">{{ ticket.priority }}</span>
+                                        </div>
+                                        <h3>{{ ticket.title }}</h3>
+                                        <div class="recent-tags">
+                                            {% for tag in ticket.tags %}
+                                                <span>{{ tag }}</span>
+                                            {% endfor %}
+                                        </div>
+                                        <p>{{ ticket.description }}</p>
+                                        <div class="recent-meta">
+                                            <span>{{ ticket.location }}</span>
+                                            <span>{{ ticket.source }}</span>
+                                            <span>{{ ticket.date }}</span>
+                                        </div>
+                                        <div class="recent-foot">
+                                            <span>Confiance: {{ ticket.confidence }}%</span>
+                                            <span>{{ ticket.assigned }}</span>
+                                        </div>
                                     </div>
-                                    <h3>{{ ticket.title }}</h3>
-                                    <div class="recent-tags">
-                                        {% for tag in ticket.tags %}
-                                            <span>{{ tag }}</span>
-                                        {% endfor %}
-                                    </div>
-                                    <p>{{ ticket.description }}</p>
-                                    <div class="recent-meta">
-                                        <span>📍 {{ ticket.location }}</span>
-                                        <span>📨 {{ ticket.source }}</span>
-                                        <span>🕐 {{ ticket.date }}</span>
-                                    </div>
-                                    <div class="recent-foot">
-                                        <span>🛡️ Confiance: {{ ticket.confidence }}%</span>
-                                        <span>👤 {{ ticket.assigned }}</span>
-                                    </div>
-                                </div>
+                                {% endif %}
                             {% endfor %}
                         </article>
 
@@ -566,7 +1225,7 @@
                             {% for hot in hotspots %}
                                 <div class="hot-item">
                                     <div class="hot-item-head">
-                                        <span>📍 {{ hot.place }}</span>
+                                        <span>{{ hot.place }}</span>
                                         <span class="hot-level" style="background:{% if hot.level == 'Haute' %}#fee2e2;color:#b91c1c{% elseif hot.level == 'Moyenne' %}#fef3c7;color:#b45309{% else %}#ecfccb;color:#4d7c0f{% endif %};">{{ hot.level }}</span>
                                     </div>
                                     <div class="hot-meta">
@@ -575,11 +1234,277 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <div class="hot-note">💡 Ces zones necessitent une attention particuliere aux horaires indiques.</div>
+                            <div class="hot-note">Ces zones necessitent une attention particuliere aux horaires indiques.</div>
                         </article>
                     </section>
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+        (function () {
+            const labels = {{ evolutionDisplayLabels|json_encode|raw }};
+            const values = {{ evolutionValues|json_encode|raw }};
+            const maxValue = {{ evolutionMax }};
+
+            const svg = document.getElementById('db-line-svg');
+            const hoverLine = document.getElementById('db-hover-line');
+            const hoverDot = document.getElementById('db-hover-dot');
+            const tooltip = document.getElementById('db-line-tooltip');
+            const tooltipDate = document.getElementById('db-line-tooltip-date');
+            const tooltipValue = document.getElementById('db-line-tooltip-value');
+            const chartMain = document.querySelector('.db-line-chart-main');
+
+            if (!svg || !hoverLine || !hoverDot || !tooltip || !tooltipDate || !tooltipValue || !chartMain || !Array.isArray(labels) || !Array.isArray(values) || values.length === 0) {
+                return;
+            }
+
+            const viewWidth = 1000;
+            const viewHeight = 260;
+
+            function showHover(index, clientX) {
+                const safeIndex = Math.max(0, Math.min(values.length - 1, index));
+                const x = values.length > 1 ? (safeIndex / (values.length - 1)) * viewWidth : 0;
+                const y = viewHeight - ((values[safeIndex] / Math.max(1, maxValue)) * viewHeight);
+
+                hoverLine.setAttribute('x1', String(x));
+                hoverLine.setAttribute('x2', String(x));
+                hoverLine.style.display = 'block';
+
+                hoverDot.setAttribute('cx', String(x));
+                hoverDot.setAttribute('cy', String(y));
+                hoverDot.style.display = 'block';
+
+                tooltipDate.textContent = labels[safeIndex] || '';
+                tooltipValue.textContent = `Tickets créés : ${values[safeIndex]}`;
+                tooltip.style.display = 'block';
+
+                const chartRect = chartMain.getBoundingClientRect();
+                const svgRect = svg.getBoundingClientRect();
+                const xPx = ((x / viewWidth) * svgRect.width);
+                const yPx = ((y / viewHeight) * svgRect.height);
+
+                let tooltipLeft = xPx + 14;
+                let tooltipTop = yPx - 56;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (tooltipLeft + tooltipRect.width > chartRect.width - 4) {
+                    tooltipLeft = xPx - tooltipRect.width - 14;
+                }
+                if (tooltipLeft < 4) {
+                    tooltipLeft = 4;
+                }
+                if (tooltipTop < 4) {
+                    tooltipTop = yPx + 14;
+                }
+
+                tooltip.style.left = `${tooltipLeft}px`;
+                tooltip.style.top = `${tooltipTop}px`;
+            }
+
+            function hideHover() {
+                hoverLine.style.display = 'none';
+                hoverDot.style.display = 'none';
+                tooltip.style.display = 'none';
+            }
+
+            svg.addEventListener('mousemove', function (event) {
+                const rect = svg.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                const idx = Math.round(ratio * (values.length - 1));
+                showHover(idx, event.clientX);
+            });
+
+            svg.addEventListener('mouseenter', function (event) {
+                const rect = svg.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                const idx = Math.round(ratio * (values.length - 1));
+                showHover(idx, event.clientX);
+            });
+
+            svg.addEventListener('mouseleave', hideHover);
+        })();
+
+        (function () {
+            const chart = document.querySelector('.category-chart');
+            const bars = chart ? Array.from(chart.querySelectorAll('.bar-wrap')) : [];
+            const hoverLine = document.getElementById('category-hover-line');
+            const tooltip = document.getElementById('category-tooltip');
+            const tooltipTitle = document.getElementById('category-tooltip-title');
+            const tooltipValue = document.getElementById('category-tooltip-value');
+
+            if (!chart || bars.length === 0 || !hoverLine || !tooltip || !tooltipTitle || !tooltipValue) {
+                return;
+            }
+
+            function clearActive() {
+                bars.forEach((bar) => bar.classList.remove('active'));
+            }
+
+            function hideCategoryHover() {
+                hoverLine.style.display = 'none';
+                tooltip.style.display = 'none';
+                clearActive();
+            }
+
+            function showCategoryHover(bar) {
+                clearActive();
+                bar.classList.add('active');
+
+                const chartRect = chart.getBoundingClientRect();
+                const barRect = bar.getBoundingClientRect();
+                const barCenterX = barRect.left - chartRect.left + (barRect.width / 2);
+                const barTopY = barRect.top - chartRect.top;
+
+                hoverLine.style.left = `${barCenterX}px`;
+                hoverLine.style.display = 'block';
+
+                const label = bar.getAttribute('data-category-label') || '';
+                const value = bar.getAttribute('data-category-value') || '0';
+                tooltipTitle.textContent = label;
+                tooltipValue.textContent = `value : ${value}`;
+                tooltip.style.display = 'block';
+
+                let tooltipLeft = barCenterX + 12;
+                let tooltipTop = barTopY - 10;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (tooltipLeft + tooltipRect.width > chartRect.width - 4) {
+                    tooltipLeft = barCenterX - tooltipRect.width - 12;
+                }
+                if (tooltipLeft < 4) {
+                    tooltipLeft = 4;
+                }
+                if (tooltipTop < 4) {
+                    tooltipTop = 4;
+                }
+
+                tooltip.style.left = `${tooltipLeft}px`;
+                tooltip.style.top = `${tooltipTop}px`;
+            }
+
+            bars.forEach((bar) => {
+                bar.addEventListener('mouseenter', function () {
+                    showCategoryHover(bar);
+                });
+
+                bar.addEventListener('mousemove', function () {
+                    showCategoryHover(bar);
+                });
+            });
+
+            chart.addEventListener('mouseleave', hideCategoryHover);
+        })();
+
+        (function () {
+            const pie = document.getElementById('status-pie');
+            const pieWrap = pie ? pie.closest('.pie-wrap') : null;
+            const tooltip = document.getElementById('pie-tooltip');
+            const tooltipTitle = document.getElementById('pie-tooltip-title');
+            const tooltipValue = document.getElementById('pie-tooltip-value');
+            const legendItems = pieWrap ? Array.from(pieWrap.querySelectorAll('.legend-item')) : [];
+
+            if (!pie || !pieWrap || !tooltip || !tooltipTitle || !tooltipValue) {
+                return;
+            }
+
+            let distribution = [];
+            try {
+                distribution = JSON.parse(pie.getAttribute('data-status-distribution') || '[]');
+            } catch (e) {
+                distribution = [];
+            }
+
+            if (!Array.isArray(distribution) || distribution.length === 0) {
+                return;
+            }
+
+            const segments = [];
+            let accumulated = 0;
+            distribution.forEach((item, index) => {
+                const start = accumulated;
+                accumulated += Number(item.value || 0);
+                const end = index === distribution.length - 1 ? 100 : accumulated;
+                segments.push({ start, end, item, index });
+            });
+
+            function clearLegendActive() {
+                legendItems.forEach((el) => el.classList.remove('active'));
+            }
+
+            function hidePieHover() {
+                tooltip.style.display = 'none';
+                pie.classList.remove('active');
+                tooltipTitle.style.color = '';
+                clearLegendActive();
+            }
+
+            function findSegmentByPercent(percent) {
+                for (const segment of segments) {
+                    if (percent >= segment.start && percent < segment.end) {
+                        return segment;
+                    }
+                }
+                return segments[segments.length - 1] || null;
+            }
+
+            function showPieHover(event) {
+                const rect = pie.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const dx = event.clientX - centerX;
+                const dy = event.clientY - centerY;
+                const distance = Math.sqrt((dx * dx) + (dy * dy));
+
+                if (distance > rect.width / 2) {
+                    hidePieHover();
+                    return;
+                }
+
+                const angle = (Math.atan2(dy, dx) * (180 / Math.PI) + 450) % 360;
+                const percent = (angle / 360) * 100;
+                const segment = findSegmentByPercent(percent);
+                if (!segment) {
+                    hidePieHover();
+                    return;
+                }
+
+                pie.classList.add('active');
+                clearLegendActive();
+                const activeLegend = pieWrap.querySelector(`.legend-item[data-status-index="${segment.index}"]`);
+                if (activeLegend) {
+                    activeLegend.classList.add('active');
+                }
+
+                tooltipTitle.textContent = segment.item.label || '';
+                tooltipTitle.style.color = segment.item.color || '';
+                tooltipValue.textContent = `${segment.item.count} tickets (${segment.item.value}%)`;
+                tooltip.style.display = 'block';
+
+                const wrapRect = pieWrap.getBoundingClientRect();
+                let left = event.clientX - wrapRect.left + 14;
+                let top = event.clientY - wrapRect.top - 22;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (left + tooltipRect.width > wrapRect.width - 4) {
+                    left = event.clientX - wrapRect.left - tooltipRect.width - 14;
+                }
+                if (left < 4) {
+                    left = 4;
+                }
+                if (top < 4) {
+                    top = 4;
+                }
+
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+            }
+
+            pie.addEventListener('mouseenter', showPieHover);
+            pie.addEventListener('mousemove', showPieHover);
+            pie.addEventListener('mouseleave', hidePieHover);
+            pieWrap.addEventListener('mouseleave', hidePieHover);
+        })();
+    </script>
 {% endblock %}

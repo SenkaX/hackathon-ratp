@@ -3,35 +3,274 @@
 {% block title %}Suivi ticket {{ signalement.id }}{% endblock %}
 
 {% block body %}
-    <section class="card">
-        <h1>Suivi du ticket</h1>
-        <div class="kv">
-            <strong>Statut</strong>
-            <span>{{ signalement.status.label() }}</span>
+    <style>
 
-            <strong>Motif</strong>
-            <span>{{ signalement.motif.label() }}</span>
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #003ca6;
+            --coq: #e2231a;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
 
-            <strong>Arret concerne</strong>
-            <span>{{ signalement.stop ? signalement.stop.label : 'Non renseigne' }}</span>
+        body {
+            background: var(--bg);
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            color: var(--text);
+        }
 
-            <strong>Date incident</strong>
-            <span>{{ signalement.incidentDate ? signalement.incidentDate|date('Y-m-d H:i') : 'Non renseignee' }}</span>
+        .ticket-shell {
+            min-height: 100vh;
+            padding: 30px 16px;
+            background: radial-gradient(circle at 0% 0%, #eef8f6 0%, #ffffff 56%), radial-gradient(circle at 100% 100%, #edf3ff 0%, transparent 44%);
+        }
 
-            <strong>Date soumission</strong>
-            <span>{{ signalement.submittedAt|date('Y-m-d H:i:s') }}</span>
+        .ticket-wrap {
+            width: min(980px, 100%);
+            margin: 0 auto;
+            display: grid;
+            gap: 14px;
+        }
 
-            <strong>Details</strong>
-            <span>{{ signalement.details|nl2br }}</span>
+        .ticket-head {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 34, 68, 0.08);
+            padding: 20px 22px;
+            position: relative;
+            overflow: hidden;
+        }
 
-            <strong>Suggestion IA</strong>
-            <span>
-                {% if signalement.suggestion %}
-                    {{ signalement.suggestion|nl2br }}
-                {% else %}
-                    Suggestion en cours de generation.
-                {% endif %}
-            </span>
+        .ticket-head::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--azur) 0%, var(--jade) 55%, var(--coq) 100%);
+            opacity: 0.45;
+        }
+
+        .ticket-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .ticket-brand img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            padding: 4px;
+            object-fit: contain;
+        }
+
+        .ticket-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .ticket-title {
+            margin: 0;
+            font-size: 1.55rem;
+            letter-spacing: -0.2px;
+        }
+
+        .ticket-id {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: #f3f7fc;
+            border: 1px solid #e0e9f2;
+            border-radius: 7px;
+            padding: 5px 9px;
+        }
+
+        .ticket-subtitle {
+            margin: 8px 0 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .ticket-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 8px 22px rgba(0, 34, 68, 0.06);
+            padding: 20px 22px;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .kv-row {
+            display: grid;
+            grid-template-columns: 210px 1fr;
+            gap: 10px 14px;
+            align-items: start;
+        }
+
+        .kv-key {
+            color: var(--muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            font-weight: 800;
+            align-self: start;
+            padding-top: 3px;
+        }
+
+        .kv-value {
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            min-width: 0;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(0, 196, 179, 0.25);
+            background: rgba(0, 196, 179, 0.12);
+            color: var(--jade-dim);
+            font-size: 0.72rem;
+            font-weight: 700;
+            width: fit-content;
+        }
+
+        .prelike {
+            background: #f9fcff;
+            border: 1px solid #e1ebf4;
+            border-radius: 8px;
+            padding: 10px 12px;
+            white-space: pre-line;
+        }
+
+        .ai-block {
+            background: rgba(0, 60, 166, 0.06);
+            border: 1px solid rgba(0, 60, 166, 0.2);
+            border-left: 3px solid var(--azur);
+            border-radius: 0 8px 8px 0;
+            padding: 10px 12px;
+        }
+
+        .ai-label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--azur);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+
+        @media (max-width: 760px) {
+            .ticket-shell {
+                padding: 18px 12px;
+            }
+
+            .ticket-head,
+            .ticket-card {
+                padding: 16px;
+            }
+
+            .kv-row {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+    </style>
+
+    <section class="ticket-shell">
+        <div class="ticket-wrap">
+            <header class="ticket-head">
+                <div class="ticket-brand">
+                    <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/0/01/RATP.svg/1280px-RATP.svg.png?_=20211228035138" alt="Logo RATP">
+                    Suivi des incidents
+                </div>
+                <div class="ticket-title-row">
+                    <h1 class="ticket-title">Suivi du ticket</h1>
+                    <span class="ticket-id">#{{ signalement.id }}</span>
+                </div>
+                <p class="ticket-subtitle">Etat actuel et informations detaillees du signalement.</p>
+            </header>
+
+            <section class="ticket-card">
+                <div class="kv">
+                    <div class="kv-row">
+                        <div class="kv-key">Statut</div>
+                        <div class="kv-value"><span class="chip">{{ signalement.status.label() }}</span></div>
+                    </div>
+
+                    <div class="kv-row">
+                        <div class="kv-key">Motif</div>
+                        <div class="kv-value">{{ signalement.motif.label() }}</div>
+                    </div>
+
+                    <div class="kv-row">
+                        <div class="kv-key">Arret concerne</div>
+                        <div class="kv-value">{{ signalement.stop ? signalement.stop.label : 'Non renseigne' }}</div>
+                    </div>
+
+                    <div class="kv-row">
+                        <div class="kv-key">Date incident</div>
+                        <div class="kv-value">{{ signalement.incidentDate ? signalement.incidentDate|date('Y-m-d H:i') : 'Non renseignee' }}</div>
+                    </div>
+
+                    <div class="kv-row">
+                        <div class="kv-key">Date soumission</div>
+                        <div class="kv-value">{{ signalement.submittedAt|date('Y-m-d H:i:s') }}</div>
+                    </div>
+
+                    <div class="kv-row">
+                        <div class="kv-key">Details</div>
+                        <div class="kv-value prelike">{{ signalement.details }}</div>
+                    </div>
+
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') or is_granted('ROLE_MANAGER') %}
+                        <div class="kv-row">
+                            <div class="kv-key">Suggestion IA</div>
+                            <div class="kv-value">
+                                {% if signalement.suggestion %}
+                                    <div class="ai-block">
+                                        <span class="ai-label">Suggestion IA</span>
+                                        {{ signalement.suggestion|nl2br }}
+                                    </div>
+                                {% else %}
+                                    <div class="ai-block">
+                                        <span class="ai-label">Suggestion IA</span>
+                                        Suggestion en cours de generation.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
         </div>
     </section>
 {% endblock %}

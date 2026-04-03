@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Signalement;
+use App\Entity\User;
 use App\Enum\SignalementStatus;
 use App\Form\SignalementType;
 use App\Message\GenerateSignalementSuggestionMessage;
@@ -52,6 +53,8 @@ final class SignalementController extends AbstractController
             if ($signalement->getMotif() !== null) {
                 $gravite = $motifGraviteRepository->find($signalement->getMotif())?->getGravite() ?? 1;
             }
+
+            $signalement->setAssignedRole($gravite >= 4 ? User::ROLE_RH : User::ROLE_MANAGER);
 
             $signalement->setPrioriteScore($this->computePriorityScore($gravite, $signalement->getConfianceScore()));
 

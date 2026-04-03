@@ -1,6 +1,12 @@
 <aside class="sidebar">
     <div class="sidebar-brand">
-        <div class="brand-logo">R</div>
+        <div class="brand-logo" style="background:transparent !important;border:0 !important;padding:0 !important;box-shadow:none !important;">
+            <img
+                src="https://upload.wikimedia.org/wikipedia/fr/thumb/0/01/RATP.svg/1280px-RATP.svg.png?_=20211228035138"
+                alt="Logo RATP"
+                style="width:100%;height:100%;object-fit:contain;display:block;border:0 !important;background:transparent !important;border-radius:0;"
+            >
+        </div>
         <div class="brand-text">
             <strong>RATP Bus</strong>
             <span>Gestion des incidents</span>
@@ -10,7 +16,11 @@
     <nav class="sidebar-nav">
         <a href="{{ path('app_moderation_dashboard') }}" class="sidebar-link {{ active == 'dashboard' ? 'active' : '' }}">Tableau de bord</a>
         <a href="{{ path('app_moderation_tickets') }}" class="sidebar-link {{ active == 'kanban' ? 'active' : '' }}">Vue Kanban</a>
-        <a href="{{ path('app_moderation_projects') }}" class="sidebar-link {{ active == 'projects' ? 'active' : '' }}">Projets</a>
+        <a href="{{ path('app_moderation_tickets_map') }}" class="sidebar-link {{ active == 'map' ? 'active' : '' }}">Carte des signalements</a>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_moderation_qrcodes') }}" class="sidebar-link {{ active == 'qrcodes' ? 'active' : '' }}">QR Codes</a>
+        {% endif %}
+        <a href="{{ path('app_moderation_projects') }}" class="sidebar-link {{ active == 'projects' ? 'active' : '' }}">Centre Bus</a>
         <a href="{{ path('app_moderation_users') }}" class="sidebar-link {{ active == 'users' ? 'active' : '' }}">Utilisateurs</a>
         <a href="{{ path('app_moderation_settings') }}" class="sidebar-link {{ active == 'settings' ? 'active' : '' }}">Parametres</a>
     </nav>

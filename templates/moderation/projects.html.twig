@@ -1,15 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Projets - Moderation{% endblock %}
+{% block title %}Centre Bus - Moderation{% endblock %}
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         .projects-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #00c4b3;
             color: #fff;
             font-weight: 700;
             font-size: 1.4rem;
@@ -83,12 +82,12 @@
 
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #00a396;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #00a396;
             font-weight: 700;
         }
 
@@ -131,7 +130,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -198,12 +197,22 @@
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #2f4c99, #5b8def);
+            background: linear-gradient(135deg, #00c4b3, #00c4b3);
             display: grid;
             place-items: center;
             color: #fff;
             font-size: 1.3rem;
             flex-shrink: 0;
+        }
+
+        .project-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .project-head h2 {
@@ -340,7 +349,7 @@
         .overview-value {
             font-size: 1.8rem;
             font-weight: 800;
-            color: #2f4c99;
+            color: #00c4b3;
         }
 
         @media (max-width: 1200px) {
@@ -367,6 +376,119 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        :root {
+            --jade: #00c4b3;
+            --jade-dim: #00a396;
+            --azur: #00c4b3;
+            --bg: #ffffff;
+            --surface: #f8fbff;
+            --border: #d7e2ef;
+            --text: #1b2430;
+            --text-dim: #5e6b7a;
+            --muted: #7e8b9b;
+        }
+
+        .projects-shell,
+        .projects-layout {
+            background: var(--bg) !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+            color: var(--text) !important;
+        }
+
+        .sidebar {
+            background: var(--surface) !important;
+            border-right-color: var(--border) !important;
+        }
+
+        .brand-logo,
+        .avatar,
+        .project-icon {
+            background: var(--azur) !important;
+        }
+
+        .sidebar-link {
+            color: var(--text-dim) !important;
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .sidebar-link:hover {
+            background: #eaf6f4 !important;
+            color: var(--jade-dim) !important;
+            border-color: #cfeee8;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 196, 179, 0.12) !important;
+            color: var(--jade-dim) !important;
+            border-color: rgba(0, 196, 179, 0.28) !important;
+        }
+
+        .topbar {
+            background: #fff !important;
+            border-bottom-color: var(--border) !important;
+        }
+
+        .header-row h1,
+        .project-head h2,
+        .stat-value,
+        .overview-value {
+            color: var(--text) !important;
+        }
+
+        .header-row p,
+        .project-subtitle,
+        .project-desc,
+        .section-label,
+        .stat-label,
+        .overview-label,
+        .brand-text span {
+            color: var(--text-dim) !important;
+        }
+
+        .btn-primary {
+            background: var(--jade) !important;
+            color: #fff !important;
+        }
+
+        .btn-primary:hover {
+            background: var(--jade-dim) !important;
+        }
+
+        .search {
+            border-color: var(--border) !important;
+            background-color: #fff !important;
+            color: var(--text-dim) !important;
+        }
+
+        .project-card,
+        .overview-card {
+            border-color: var(--border) !important;
+            box-shadow: 0 1px 2px rgba(0, 34, 68, 0.05) !important;
+            border-radius: 10px !important;
+        }
+
+        .chip {
+            background: #edf6f4 !important;
+            color: var(--jade-dim) !important;
+            border: 1px solid #d2eee9;
+        }
+
+        .chip.more {
+            background: #f3f7fc !important;
+            color: var(--muted) !important;
+            border-color: #e1ebf4;
+        }
+
+        .perimeter {
+            background: #f2fbfa !important;
+            border-color: #c9ece6 !important;
+        }
+
+        .card-link {
+            color: var(--azur) !important;
+        }
     </style>
 
     <section class="projects-shell">
@@ -388,17 +510,26 @@
                 <main class="page">
                     <div class="header-row">
                         <div>
-                            <h1>Projets</h1>
-                            <p>Gestion des incidents par station de bus</p>
+                            <h1>Centre Bus</h1>
+                            <p>Gestion des incidents par centre bus</p>
                         </div>
-                        <button class="btn-primary">+ Nouveau projet</button>
+                        <button class="btn-primary">+ Nouveau centre bus</button>
                     </div>
 
                     <section class="projects-grid">
                         {% for project in projects %}
                             <article class="project-card">
                                 <div class="project-head">
-                                    <div class="project-icon">📍</div>
+                                    <div class="project-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" focusable="false">
+                                            <rect x="4" y="3" width="16" height="14" rx="2"></rect>
+                                            <line x1="4" y1="8" x2="20" y2="8"></line>
+                                            <line x1="8" y1="12" x2="8" y2="12"></line>
+                                            <line x1="16" y1="12" x2="16" y2="12"></line>
+                                            <line x1="7" y1="17" x2="7" y2="20"></line>
+                                            <line x1="17" y1="17" x2="17" y2="20"></line>
+                                        </svg>
+                                    </div>
                                     <div>
                                         <h2>{{ project.name }}</h2>
                                         <div class="project-subtitle">{{ project.subtitle }}</div>
@@ -407,7 +538,7 @@
 
                                 <div class="project-desc">{{ project.description }}</div>
 
-                                <div class="section-label">🚌 Lignes desservies</div>
+                                <div class="section-label"> Lignes desservies</div>
                                 <div class="line-chips">
                                     {% for line in project.lines %}
                                         <span class="chip {{ line == '+4' ? 'more' : '' }}">{{ line }}</span>
@@ -416,19 +547,19 @@
 
                                 <div class="project-stats">
                                     <div>
-                                        <div class="stat-label">⟡ Total</div>
+                                        <div class="stat-label">Total</div>
                                         <div class="stat-value">{{ project.total }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label" style="color:#f59e0b;">⟡ En attente</div>
+                                        <div class="stat-label" style="color:#f59e0b;">En attente</div>
                                         <div class="stat-value">{{ project.pending }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label">⟡ En cours</div>
+                                        <div class="stat-label">En cours</div>
                                         <div class="stat-value">{{ project.inProgress }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label" style="color:#ef4444;">⟡ Critiques</div>
+                                        <div class="stat-label" style="color:#ef4444;">Critiques</div>
                                         <div class="stat-value">{{ project.critical }}</div>
                                     </div>
                                 </div>

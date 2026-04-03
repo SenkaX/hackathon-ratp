@@ -1,0 +1,955 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modération des tickets - Dashboard Kanban{% endblock %}
+
+{% block body %}
+<style>
+
+    :root {
+        --jade:     #00c4b3;
+        --jade-dim: #00a396;
+        --jade-bg:  #e8faf8;
+        --azur:     #00c4b3;
+        --azur-dim: #00a396;
+        --azur-bg:  #e8eef8;
+        --coq:      #e2231a;
+        --coq-bg:   #fef2f1;
+        --night:    #0d1117;
+        --night2:   #161b22;
+        --night3:   #21262d;
+        --night4:   #30363d;
+        --muted:    #8b949e;
+        --text:     #e6edf3;
+        --text-dim: #c9d1d9;
+        --ocre:     #c9910d;
+        --ocre-bg:  #fdf3dc;
+        --yellow:   #f0b429;
+        --green:    #2ea043;
+        --surface:  #ffffff08;
+    }
+
+    * { box-sizing: border-box; }
+
+    .dashboard-shell {
+        background: var(--night);
+        min-height: 100vh;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+        background: var(--night2);
+        border-bottom: 1px solid var(--night4);
+        padding: 0 32px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .brand-badge {
+        background: var(--jade);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 2px;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    .brand-sep {
+        width: 1px;
+        height: 20px;
+        background: var(--night4);
+    }
+
+    .brand-label {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+
+    .topbar-stripe {
+        height: 2px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(90deg, var(--azur) 0%, var(--jade) 50%, var(--coq) 100%);
+    }
+
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-nav {
+        display: flex;
+        gap: 4px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted);
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-item:hover { background: var(--night3); color: var(--text); }
+    .nav-item.active { background: var(--night3); color: var(--jade); }
+
+    .logout-btn {
+        background: transparent;
+        border: 1px solid var(--night4);
+        color: var(--muted);
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 6px;
+        text-decoration: none;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: all 0.15s;
+        cursor: pointer;
+    }
+
+    .logout-btn:hover { border-color: var(--coq); color: var(--coq); }
+
+    /* ── LAYOUT ── */
+    .dashboard-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        background: var(--night2);
+        border-right: 1px solid var(--night4);
+        padding: 20px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        overflow-y: auto;
+    }
+
+    .sidebar-section {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        padding: 12px 8px 6px;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-dim);
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .sidebar-link:hover { background: var(--night3); color: var(--text); }
+    .sidebar-link.active { background: rgba(0,196,179,0.12); color: var(--jade); }
+
+    .sidebar-icon { font-size: 14px; opacity: 0.8; }
+
+    /* ── MAIN ── */
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .page-header {
+        padding: 20px 28px 0;
+        flex-shrink: 0;
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0 0 2px;
+        letter-spacing: -0.3px;
+    }
+
+    .page-subtitle {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    /* ── KPIs ── */
+    .kpi-bar {
+        display: flex;
+        gap: 12px;
+        padding: 16px 28px;
+        flex-shrink: 0;
+    }
+
+    .kpi-card {
+        flex: 1;
+        background: var(--night2);
+        border: 1px solid var(--night4);
+        border-radius: 8px;
+        padding: 14px 18px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+    }
+
+    .kpi-card:nth-child(1)::before { background: var(--jade); }
+    .kpi-card:nth-child(2)::before { background: var(--yellow); }
+    .kpi-card:nth-child(3)::before { background: var(--green); }
+    .kpi-card:nth-child(4)::before { background: var(--muted); }
+
+    .kpi-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .kpi-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+    }
+
+    /* ── FILTERS ── */
+    .filters-bar {
+        background: var(--night2);
+        border-top: 1px solid var(--night4);
+        border-bottom: 1px solid var(--night4);
+        padding: 12px 28px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .filter-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        white-space: nowrap;
+    }
+
+    .filter-select {
+        background: var(--night3);
+        border: 1px solid var(--night4);
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-dim);
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+
+    .filter-select:focus { outline: none; border-color: var(--jade); }
+
+    .btn-filter {
+        background: var(--jade);
+        color: #fff;
+        border: 0;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: background 0.15s;
+        white-space: nowrap;
+    }
+
+    .btn-filter:hover { background: var(--jade-dim); }
+
+    .btn-reset {
+        background: transparent;
+        border: 1px solid var(--night4);
+        color: var(--muted);
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 6px;
+        text-decoration: none;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: all 0.15s;
+        white-space: nowrap;
+    }
+
+    .btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── ALERTS ── */
+    .alerts-zone {
+        padding: 0 28px 8px;
+        flex-shrink: 0;
+    }
+
+    .alert-msg {
+        padding: 10px 14px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .alert-success { background: rgba(46,160,67,0.15); border: 1px solid rgba(46,160,67,0.3); color: #3fb950; }
+    .alert-error   { background: rgba(226,35,26,0.12); border: 1px solid rgba(226,35,26,0.3);  color: #f85149; }
+
+    /* ── KANBAN ── */
+    .kanban-scroll {
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 28px 24px;
+    }
+
+    .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(6, 320px);
+        gap: 12px;
+        min-width: min-content;
+        height: 100%;
+        padding-top: 16px;
+    }
+
+    .kanban-column {
+        background: var(--night2);
+        border: 1px solid var(--night4);
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        max-height: calc(100vh - 280px);
+    }
+
+    .column-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--night4);
+        flex-shrink: 0;
+    }
+
+    .column-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .column-title-text {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-dim);
+        letter-spacing: 0.2px;
+        flex: 1;
+        margin-left: 8px;
+    }
+
+    .column-count {
+        background: var(--night3);
+        border: 1px solid var(--night4);
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+    }
+
+    .column-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--night4) transparent;
+    }
+
+    .column-content.drag-over {
+        background: rgba(0, 196, 179, 0.05);
+        outline: 2px dashed rgba(0, 196, 179, 0.3);
+        outline-offset: -4px;
+        border-radius: 6px;
+    }
+
+    .column-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        min-height: 80px;
+        color: var(--night4);
+        font-size: 12px;
+        font-style: italic;
+    }
+
+    /* ── TICKET ── */
+    .ticket {
+        background: var(--night3);
+        border: 1px solid var(--night4);
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        cursor: grab;
+        transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+
+    .ticket:hover {
+        border-color: rgba(0,196,179,0.4);
+        box-shadow: 0 0 0 3px rgba(0,196,179,0.06);
+        transform: translateY(-1px);
+    }
+
+    .ticket.dragging {
+        opacity: 0.4;
+        cursor: grabbing;
+    }
+
+    .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ticket-id {
+        font-family: 'DM Mono', monospace;
+        font-size: 10px;
+        color: var(--muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 120px;
+    }
+
+    .ticket-priority {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .priority-critical { background: rgba(226,35,26,0.18);  color: #f85149; border: 1px solid rgba(226,35,26,0.25); }
+    .priority-high     { background: rgba(240,180,41,0.15); color: #f0b429; border: 1px solid rgba(240,180,41,0.25); }
+    .priority-medium   { background: rgba(0,196,179,0.12);  color: var(--jade); border: 1px solid rgba(0,196,179,0.2); }
+    .priority-low      { background: rgba(0,60,166,0.2);    color: #79b8ff; border: 1px solid rgba(0,60,166,0.3); }
+
+    .ticket-motif {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    .ticket-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: var(--night4);
+        color: var(--muted);
+        font-family: 'DM Mono', monospace;
+        width: fit-content;
+    }
+
+    .ticket-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ticket-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    .ticket-meta-icon { font-size: 11px; opacity: 0.7; }
+
+    .ai-block {
+        background: rgba(0,60,166,0.12);
+        border: 1px solid rgba(0,60,166,0.25);
+        border-left: 3px solid var(--azur);
+        border-radius: 0 6px 6px 0;
+        padding: 8px 10px;
+    }
+
+    .ai-block-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: #79b8ff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .ai-block-text {
+        font-size: 11px;
+        color: var(--text-dim);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .ticket-actions {
+        border-top: 1px solid var(--night4);
+        padding-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ticket-actions select {
+        width: 100%;
+        background: var(--night4);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 5px;
+        padding: 7px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-dim);
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        cursor: pointer;
+    }
+
+    .ticket-actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .btn-save {
+        background: var(--jade);
+        color: #fff;
+        border: 0;
+        padding: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: background 0.15s;
+    }
+
+    .btn-save:hover { background: var(--jade-dim); }
+
+    .btn-view {
+        background: transparent;
+        border: 1px solid var(--night4);
+        color: var(--muted);
+        padding: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 5px;
+        text-decoration: none;
+        text-align: center;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        transition: all 0.15s;
+        display: block;
+    }
+
+    .btn-view:hover { border-color: var(--jade); color: var(--jade); }
+
+    .review-note {
+        font-size: 10px;
+        color: var(--night4);
+        padding-top: 6px;
+        border-top: 1px solid var(--night4);
+        font-style: italic;
+    }
+
+    /* scrollbar Webkit */
+    .column-content::-webkit-scrollbar { width: 4px; }
+    .column-content::-webkit-scrollbar-track { background: transparent; }
+    .column-content::-webkit-scrollbar-thumb { background: var(--night4); border-radius: 2px; }
+    .kanban-scroll::-webkit-scrollbar { height: 6px; }
+    .kanban-scroll::-webkit-scrollbar-track { background: var(--night); }
+    .kanban-scroll::-webkit-scrollbar-thumb { background: var(--night4); border-radius: 3px; }
+
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ticket { animation: fadeSlideIn 0.25s ease both; }
+</style>
+
+<div class="dashboard-shell">
+
+    <!-- TOPBAR -->
+    <nav class="topbar">
+        <div class="topbar-stripe"></div>
+        <div class="topbar-left">
+            <div class="brand">
+                <span class="brand-badge">RATP</span>
+                <div class="brand-sep"></div>
+                <span class="brand-label">Modération · Incidents</span>
+            </div>
+            <div class="topbar-nav">
+                <a href="#" class="nav-item active"> Kanban</a>
+                <a href="#" class="nav-item">️ Carte</a>
+                <a href="#" class="nav-item"> Statistiques</a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="#" class="nav-item">️ QR Codes</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('app_logout') }}" class="logout-btn">Déconnecter</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <span class="sidebar-section">Vue</span>
+            <a href="#" class="sidebar-link active"><span class="sidebar-icon"></span> Kanban</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Liste</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon">️</span> Carte</a>
+
+            <span class="sidebar-section">Analyse</span>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Statistiques</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Hotspots</a>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <span class="sidebar-section">Admin</span>
+                <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> QR Codes</a>
+            {% endif %}
+        </aside>
+
+        <!-- MAIN -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">{{ pageTitle|default('Tableau de modération') }}</h1>
+                <p class="page-subtitle">{{ pageSubtitle|default('Vue Kanban — Gestion centralisée des incidents') }}</p>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-bar">
+                <div class="kpi-card">
+                    <span class="kpi-label">Total</span>
+                    <div class="kpi-value" id="kpi-total">{{ kpis.total }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">En attente</span>
+                    <div class="kpi-value" id="kpi-pending">{{ kpis.pending }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Validés</span>
+                    <div class="kpi-value" id="kpi-validated">{{ kpis.validated }}</div>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Sans suite</span>
+                    <div class="kpi-value" id="kpi-dismissed">{{ kpis.dismissed }}</div>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filters-bar">
+                <form method="get" style="display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap;">
+                    <span class="filter-label">Filtrer :</span>
+
+                    <select name="status" class="filter-select">
+                        <option value="">Tous les statuts</option>
+                        {% for status in statuses %}
+                            <option value="{{ status.value }}" {{ filters.status == status.value ? 'selected' : '' }}>
+                                {{ status.label() }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="motif" class="filter-select">
+                        <option value="">Tous les motifs</option>
+                        {% for motif in motifs %}
+                            <option value="{{ motif.value }}" {{ filters.motif == motif.value ? 'selected' : '' }}>
+                                {{ motif.label() }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="stop" class="filter-select">
+                        <option value="">Tous les arrêts</option>
+                        {% for stop in stops %}
+                            <option value="{{ stop.id }}" {{ filters.stop == stop.id ? 'selected' : '' }}>
+                                {{ stop.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn-filter">Filtrer</button>
+                    <a href="{{ path(resetRoute|default('app_moderation_tickets')) }}" class="btn-reset">Réinitialiser</a>
+                </form>
+            </div>
+
+            <!-- ALERTS -->
+            {% if app.flashes('success') or app.flashes('error') %}
+            <div class="alerts-zone">
+                {% for message in app.flashes('success') %}
+                    <div class="alert-msg alert-success"> {{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert-msg alert-error"> {{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- KANBAN -->
+            <div class="kanban-scroll">
+                <div class="kanban-board">
+                    {% set lanes = [
+                        {'status': 'en_attente_validation', 'label': 'En attente',         'dot': '#f0b429'},
+                        {'status': 'en_cours',              'label': 'En cours',            'dot': '#79b8ff'},
+                        {'status': 'valide',                'label': 'Validé',              'dot': '#3fb950'},
+                        {'status': 'sans_suite',            'label': 'Sans suite',          'dot': '#8b949e'},
+                        {'status': 'escalade_juridique',    'label': 'Juridique',           'dot': '#00c4b3'},
+                        {'status': 'resolu',                'label': 'Résolu',              'dot': '#2ea043'}
+                    ] %}
+
+                    {% for lane in lanes %}
+                        {% set laneTickets = [] %}
+                        {% for ticket in tickets %}
+                            {% if ticket.status.value == lane.status %}
+                                {% set laneTickets = laneTickets|merge([ticket]) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="kanban-column">
+                            <div class="column-header">
+                                <span class="column-dot" style="background:{{ lane.dot }}"></span>
+                                <span class="column-title-text">{{ lane.label }}</span>
+                                <span class="column-count">{{ laneTickets|length }}</span>
+                            </div>
+
+                            <div class="column-content" data-status="{{ lane.status }}">
+                                {% if laneTickets|length == 0 %}
+                                    <div class="column-empty">—</div>
+                                {% else %}
+                                    {% for ticket in laneTickets %}
+                                        <div class="ticket"
+                                             draggable="true"
+                                             data-ticket-id="{{ ticket.id }}"
+                                             data-status="{{ ticket.status.value }}"
+                                             style="animation-delay: {{ loop.index0 * 0.04 }}s">
+
+                                            <div class="ticket-header">
+                                                <span class="ticket-id">{{ ticket.id|slice(0, 8) }}…</span>
+                                                <span class="ticket-priority priority-{% if ticket.prioriteScore >= 75 %}critical{% elseif ticket.prioriteScore >= 50 %}high{% elseif ticket.prioriteScore >= 25 %}medium{% else %}low{% endif %}">
+                                                    {% if ticket.prioriteScore >= 75 %}CRITIQUE{% elseif ticket.prioriteScore >= 50 %}HAUTE{% elseif ticket.prioriteScore >= 25 %}MOYENNE{% else %}FAIBLE{% endif %}
+                                                </span>
+                                            </div>
+
+                                            <p class="ticket-motif">{{ ticket.motif.label() }}</p>
+
+                                            <span class="ticket-tag">{{ ticket.motif.value }}</span>
+
+                                            <div class="ticket-meta">
+                                                <div class="ticket-meta-row">
+                                                    <span class="ticket-meta-icon"></span>
+                                                    {{ ticket.stop ? ticket.stop.label : 'Arrêt inconnu' }}
+                                                </div>
+                                                <div class="ticket-meta-row">
+                                                    <span class="ticket-meta-icon"></span>
+                                                    {{ ticket.submittedAt|date('d/m/Y à H:i') }}
+                                                </div>
+                                            </div>
+
+                                            {% if ticket.suggestion is not empty %}
+                                                <div class="ai-block">
+                                                    <span class="ai-block-label"> Suggestion IA</span>
+                                                    <p class="ai-block-text">{{ ticket.suggestion|nl2br }}</p>
+                                                </div>
+                                            {% endif %}
+
+                                            <form class="ticket-actions"
+                                                  method="post"
+                                                  action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
+                                                <input type="hidden" name="_redirect_route" value="{{ resetRoute|default('app_moderation_tickets') }}">
+
+                                                <select name="status">
+                                                    {% for status in statuses %}
+                                                        <option value="{{ status.value }}" {{ ticket.status.value == status.value ? 'selected' : '' }}>
+                                                            {{ status.label() }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+
+                                                <div class="ticket-actions-row">
+                                                    <button type="submit" class="btn-save"> Sauver</button>
+                                                    <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view"> Voir</a>
+                                                </div>
+                                            </form>
+
+                                            {% if ticket.reviewedAt %}
+                                                <div class="review-note">
+                                                    Revu {{ ticket.reviewedAt|date('d/m à H:i') }}{% if ticket.reviewedBy %} · {{ ticket.reviewedBy.email }}{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>{# /main-content #}
+    </div>{# /dashboard-layout #}
+</div>{# /dashboard-shell #}
+
+<script>
+    let draggedTicket = null;
+
+    function updateCounters() {
+        document.querySelectorAll('.column-content').forEach(col => {
+            const count = col.querySelectorAll('.ticket').length;
+            col.closest('.kanban-column').querySelector('.column-count').textContent = count;
+        });
+    }
+
+    function updateKpis() {
+        const q = s => document.querySelectorAll(s).length;
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('kpi-total',     q('.ticket'));
+        set('kpi-pending',   q('.column-content[data-status="en_attente_validation"] .ticket'));
+        set('kpi-validated', q('.column-content[data-status="valide"] .ticket'));
+        set('kpi-dismissed', q('.column-content[data-status="sans_suite"] .ticket'));
+    }
+
+    function attachDrag(ticket) {
+        ticket.addEventListener('dragstart', e => {
+            draggedTicket = ticket;
+            ticket.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        ticket.addEventListener('dragend', () => {
+            ticket.classList.remove('dragging');
+            document.querySelectorAll('.column-content').forEach(c => c.classList.remove('drag-over'));
+        });
+    }
+
+    document.querySelectorAll('.ticket').forEach(attachDrag);
+
+    document.querySelectorAll('.column-content').forEach(col => {
+        col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+        col.addEventListener('dragleave', e => { if (e.target === col) col.classList.remove('drag-over'); });
+        col.addEventListener('drop', e => {
+            e.preventDefault();
+            col.classList.remove('drag-over');
+            if (!draggedTicket) return;
+
+            const newStatus = col.getAttribute('data-status');
+            const oldStatus = draggedTicket.getAttribute('data-status');
+            const ticketId  = draggedTicket.getAttribute('data-ticket-id');
+            const srcCol    = draggedTicket.parentElement;
+
+            if (newStatus === oldStatus) { draggedTicket = null; return; }
+
+            draggedTicket.style.opacity = '0.6';
+            const empty = col.querySelector('.column-empty');
+            if (empty) empty.remove();
+
+            draggedTicket.setAttribute('data-status', newStatus);
+            const sel = draggedTicket.querySelector('select[name="status"]');
+            if (sel) sel.value = newStatus;
+            col.appendChild(draggedTicket);
+
+            if (srcCol && !srcCol.querySelector('.ticket'))
+                srcCol.innerHTML = '<div class="column-empty">—</div>';
+
+            updateCounters();
+            updateKpis();
+
+            fetch(`/moderation/tickets/${ticketId}/status-ajax`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ id: ticketId, status: newStatus })
+            })
+            .then(r => { if (!r.ok) throw new Error(); draggedTicket && (draggedTicket.style.opacity = '1'); })
+            .catch(() => {
+                draggedTicket.setAttribute('data-status', oldStatus);
+                if (sel) sel.value = oldStatus;
+                const tgtEmpty = col.querySelector('.column-empty');
+                if (tgtEmpty) tgtEmpty.remove();
+                if (srcCol) { const se = srcCol.querySelector('.column-empty'); if (se) se.remove(); srcCol.appendChild(draggedTicket); }
+                if (!col.querySelector('.ticket')) col.innerHTML = '<div class="column-empty">—</div>';
+                draggedTicket.style.opacity = '1';
+                updateCounters(); updateKpis();
+                alert('Erreur lors de la mise à jour du statut.');
+            });
+
+            draggedTicket = null;
+        });
+    });
+
+    updateKpis();
+</script>
+{% endblock %}
