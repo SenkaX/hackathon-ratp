@@ -513,6 +513,7 @@
             justify-content: space-between;
             gap: 8px;
             align-items: center;
+            min-width: 0;
         }
 
         .ticket-id {
@@ -521,6 +522,11 @@
             font-family: 'DM Mono', monospace;
             font-weight: 500;
             letter-spacing: 0.2px;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .ticket-priority {
@@ -532,6 +538,7 @@
             white-space: nowrap;
             border: 1px solid transparent;
             letter-spacing: 0.3px;
+            flex-shrink: 0;
         }
 
         .priority-critical {
