@@ -37,7 +37,7 @@ class AppFixtures extends Fixture
         }
 
         $admin = (new User())
-            ->setEmail('admin@ratp.local')
+            ->setEmail('marie.dupont@ratp.local')
             ->setRoles([User::ROLE_ADMIN]);
         $admin->setPassword($this->passwordHasher->hashPassword($admin, 'Admin123!'));
         $manager->persist($admin);

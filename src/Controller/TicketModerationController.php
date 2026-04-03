@@ -174,7 +174,6 @@ final class TicketModerationController extends AbstractController
         ];
 
         $criticalTickets = 0;
-        $confidenceTotal = 0;
         $recentTickets = [];
 
         foreach ($tickets as $ticket) {
@@ -186,8 +185,6 @@ final class TicketModerationController extends AbstractController
             if ($ticket->getPrioriteScore() >= 75) {
                 ++$criticalTickets;
             }
-
-            $confidenceTotal += $ticket->getConfianceScore();
 
             if (count($recentTickets) < 5) {
                 $recentTickets[] = [
@@ -207,7 +204,6 @@ final class TicketModerationController extends AbstractController
         }
 
         $totalTickets = count($tickets);
-        $averageConfidence = $totalTickets > 0 ? (int) round($confidenceTotal / $totalTickets) : 0;
 
         $kpis = [
             ['label' => 'Total Tickets', 'value' => $totalTickets, 'color' => '#3b82f6', 'icon' => 'pulse'],
@@ -215,7 +211,6 @@ final class TicketModerationController extends AbstractController
             ['label' => 'En cours', 'value' => $statusCounts['en_cours'], 'color' => '#a855f7', 'icon' => 'trend'],
             ['label' => 'Resolus', 'value' => $statusCounts['resolu'], 'color' => '#22c55e', 'icon' => 'check'],
             ['label' => 'Tickets critiques', 'value' => $criticalTickets, 'color' => '#ef4444', 'icon' => 'alert'],
-            ['label' => 'Indice confiance moy.', 'value' => $averageConfidence . '%', 'color' => '#6366f1', 'icon' => 'shield'],
         ];
 
         $categoryCounts = [];
@@ -816,6 +811,10 @@ final class TicketModerationController extends AbstractController
 
     private function displayNameFromEmail(string $email): string
     {
+        if (strtolower($email) === 'admin@ratp.local') {
+            return 'Marie Dupont';
+        }
+
         $localPart = strstr($email, '@', true) ?: $email;
         $parts = preg_split('/[._-]+/', $localPart) ?: [$localPart];
         $parts = array_filter(array_map(static fn (string $part): string => trim($part), $parts));
