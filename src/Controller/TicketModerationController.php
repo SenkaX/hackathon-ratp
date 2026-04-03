@@ -154,9 +154,25 @@ final class TicketModerationController extends AbstractController
 
     #[Route('/dashboard', name: 'app_moderation_dashboard', methods: ['GET'])]
     public function dashboard(
+        Request $request,
         SignalementRepository $signalementRepository,
     ): Response
     {
+        $periodMap = [
+            '30d' => ['days' => 30, 'label' => '30 derniers jours'],
+            '3m' => ['days' => 90, 'label' => '3 derniers mois'],
+            '6m' => ['days' => 180, 'label' => '6 derniers mois'],
+            '1y' => ['days' => 365, 'label' => '12 derniers mois'],
+        ];
+
+        $selectedPeriod = (string) $request->query->get('period', '30d');
+        if (!isset($periodMap[$selectedPeriod])) {
+            $selectedPeriod = '30d';
+        }
+
+        $periodDays = $periodMap[$selectedPeriod]['days'];
+        $periodLabel = $periodMap[$selectedPeriod]['label'];
+
         $tickets = $signalementRepository->createQueryBuilder('ticket')
             ->leftJoin('ticket.stop', 'stop')
             ->addSelect('stop')
@@ -176,6 +192,14 @@ final class TicketModerationController extends AbstractController
         $criticalTickets = 0;
         $recentTickets = [];
 
+        $today = new \DateTimeImmutable('today');
+        $evolutionStart = $today->modify(sprintf('-%d days', $periodDays - 1));
+        $evolutionDailyCounts = [];
+        for ($i = 0; $i < $periodDays; ++$i) {
+            $day = $evolutionStart->modify(sprintf('+%d days', $i));
+            $evolutionDailyCounts[$day->format('Y-m-d')] = 0;
+        }
+
         foreach ($tickets as $ticket) {
             $statusValue = $ticket->getStatus()->value;
             if (isset($statusCounts[$statusValue])) {
@@ -186,11 +210,19 @@ final class TicketModerationController extends AbstractController
                 ++$criticalTickets;
             }
 
+            $submittedAt = $ticket->getSubmittedAt();
+            if ($submittedAt >= $evolutionStart) {
+                $key = $submittedAt->format('Y-m-d');
+                if (array_key_exists($key, $evolutionDailyCounts)) {
+                    ++$evolutionDailyCounts[$key];
+                }
+            }
+
             if (count($recentTickets) < 5) {
                 $recentTickets[] = [
                     'id' => 'TICK-' . strtoupper(substr((string) $ticket->getId(), 0, 8)),
                     'priority' => $ticket->getPrioriteScore() >= 75 ? 'Critique' : ($ticket->getPrioriteScore() >= 50 ? 'Haute' : ($ticket->getPrioriteScore() >= 25 ? 'Moyenne' : 'Faible')),
-                    'priorityColor' => $ticket->getPrioriteScore() >= 75 ? '#ef4444' : ($ticket->getPrioriteScore() >= 50 ? '#f97316' : ($ticket->getPrioriteScore() >= 25 ? '#3b82f6' : '#22c55e')),
+                    'priorityColor' => $ticket->getPrioriteScore() >= 75 ? '#ef4444' : ($ticket->getPrioriteScore() >= 50 ? '#f97316' : ($ticket->getPrioriteScore() >= 25 ? '#00c4b3' : '#22c55e')),
                     'title' => $ticket->getMotif()?->label() ?? 'Ticket',
                     'tags' => [$ticket->getMotif()?->value ?? 'unknown', $ticket->getStatus()->label()],
                     'description' => $ticket->getDetails(),
@@ -205,8 +237,65 @@ final class TicketModerationController extends AbstractController
 
         $totalTickets = count($tickets);
 
+        $evolutionLabels = [];
+        $evolutionValues = [];
+        foreach ($evolutionDailyCounts as $dateKey => $count) {
+            $evolutionLabels[] = (new \DateTimeImmutable($dateKey))->format('d/m');
+            $evolutionValues[] = $count;
+        }
+
+        $displayLabels = $evolutionLabels;
+        $displayValues = $evolutionValues;
+        $firstNonZeroIndex = null;
+        foreach ($displayValues as $index => $value) {
+            if ($value > 0) {
+                $firstNonZeroIndex = $index;
+                break;
+            }
+        }
+
+        if ($selectedPeriod === '30d' && $firstNonZeroIndex !== null && $firstNonZeroIndex > 0) {
+            $displayLabels = array_slice($displayLabels, $firstNonZeroIndex);
+            $displayValues = array_slice($displayValues, $firstNonZeroIndex);
+        }
+
+        $evolutionAxisLabels = [];
+        $labelSlots = 10;
+        $labelCount = count($displayLabels);
+        $step = max(1, (int) floor($labelCount / $labelSlots));
+        for ($i = 0; $i < $labelCount; $i += $step) {
+            $evolutionAxisLabels[] = $displayLabels[$i];
+            if (count($evolutionAxisLabels) >= $labelSlots) {
+                break;
+            }
+        }
+        if ($evolutionAxisLabels !== [] && end($evolutionAxisLabels) !== end($displayLabels)) {
+            $evolutionAxisLabels[count($evolutionAxisLabels) - 1] = end($displayLabels);
+        }
+
+        $rawEvolutionMax = max(0, ...$displayValues);
+        $evolutionMax = $rawEvolutionMax > 0
+            ? (int) ceil($rawEvolutionMax * 1.25)
+            : 1;
+        $evolutionPoints = [];
+        $evolutionCount = count($displayValues);
+        foreach ($displayValues as $index => $value) {
+            $x = $evolutionCount > 1 ? round(($index / ($evolutionCount - 1)) * 1000, 2) : 0;
+            $y = round(260 - (($value / $evolutionMax) * 260), 2);
+            $evolutionPoints[] = sprintf('%s,%s', $x, $y);
+        }
+
+        $trendWindow = max(7, (int) floor($periodDays / 4));
+        $recentWindow = array_slice($evolutionValues, -$trendWindow);
+        $previousWindow = array_slice($evolutionValues, -($trendWindow * 2), $trendWindow);
+        $recent7Total = array_sum($recentWindow);
+        $previous7Total = array_sum($previousWindow);
+        $evolutionTrend = $previous7Total > 0
+            ? (int) round((($recent7Total - $previous7Total) / $previous7Total) * 100)
+            : ($recent7Total > 0 ? 100 : 0);
+
         $kpis = [
-            ['label' => 'Total Tickets', 'value' => $totalTickets, 'color' => '#3b82f6', 'icon' => 'pulse'],
+            ['label' => 'Total Tickets', 'value' => $totalTickets, 'color' => '#00c4b3', 'icon' => 'pulse'],
             ['label' => 'En attente validation', 'value' => $statusCounts['en_attente_validation'], 'color' => '#eab308', 'icon' => 'clock'],
             ['label' => 'En cours', 'value' => $statusCounts['en_cours'], 'color' => '#a855f7', 'icon' => 'trend'],
             ['label' => 'Resolus', 'value' => $statusCounts['resolu'], 'color' => '#22c55e', 'icon' => 'check'],
@@ -259,7 +348,7 @@ final class TicketModerationController extends AbstractController
         ));
 
         $statusMeta = [
-            'en_attente_validation' => ['label' => 'En attente de validation', 'color' => '#3b82f6'],
+            'en_attente_validation' => ['label' => 'En attente de validation', 'color' => '#00c4b3'],
             'valide' => ['label' => 'Valide', 'color' => '#8b5cf6'],
             'en_cours' => ['label' => 'En cours', 'color' => '#ec4899'],
             'sans_suite' => ['label' => 'Classe sans suite', 'color' => '#10b981'],
@@ -324,6 +413,16 @@ final class TicketModerationController extends AbstractController
 
         return $this->render('moderation/dashboard.html.twig', [
             'kpis' => $kpis,
+            'evolutionLabels' => $evolutionLabels,
+            'evolutionDisplayLabels' => $displayLabels,
+            'evolutionAxisLabels' => $evolutionAxisLabels,
+            'evolutionAxisLabelCount' => max(1, count($evolutionAxisLabels)),
+            'evolutionValues' => $displayValues,
+            'evolutionMax' => $evolutionMax,
+            'evolutionPoints' => implode(' ', $evolutionPoints),
+            'evolutionTrend' => $evolutionTrend,
+            'selectedPeriod' => $selectedPeriod,
+            'periodLabel' => $periodLabel,
             'categoryBars' => $categoryBars,
             'maxCategoryValue' => $maxCategoryValue,
             'statusDistribution' => $statusDistribution,

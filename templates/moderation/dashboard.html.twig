@@ -38,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: #5b8def;
+            background: #00c4b3;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,12 +84,12 @@
         .sidebar-link.active,
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #3272d9;
+            color: #00a396;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #3272d9;
+            color: #00a396;
             font-weight: 700;
         }
 
@@ -153,7 +153,7 @@
 
         .db-filter-btn {
             border: 0;
-            background: #5b8def;
+            background: #00c4b3;
             color: #fff;
             border-radius: 9px;
             padding: 10px 18px;
@@ -164,7 +164,7 @@
         }
 
         .db-filter-btn:hover {
-            background: #3272d9;
+            background: #00a396;
             transform: translateY(-1px);
         }
 
@@ -266,7 +266,7 @@
         .db-kpi-value {
             font-size: 2rem;
             font-weight: 800;
-            color: #5b8def;
+            color: #00c4b3;
             margin-bottom: 6px;
         }
 
@@ -276,6 +276,168 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
+        }
+
+        .db-evolution {
+            margin-top: 18px;
+        }
+
+        .db-evolution-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .db-evolution-head h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            color: #0f172a;
+        }
+
+        .db-evolution-sub {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .db-evolution-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .db-period {
+            display: inline-block;
+            border: 1px solid #d7e2ef;
+            border-radius: 8px;
+            background: #fff;
+            color: #475569;
+            padding: 6px 10px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .db-period.active {
+            background: var(--azur);
+            border-color: var(--azur);
+            color: #fff;
+        }
+
+        .db-trend {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #16a34a;
+            white-space: nowrap;
+        }
+
+        .db-trend.down {
+            color: #dc2626;
+        }
+
+        .db-line-chart {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fcfdff;
+            padding: 12px;
+        }
+
+        .db-line-chart-wrap {
+            display: grid;
+            grid-template-columns: 36px 1fr;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .db-line-chart-main {
+            position: relative;
+        }
+
+        .db-line-y-axis {
+            color: #7e8b9b;
+            font-size: 0.76rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 2px 0;
+        }
+
+        .db-line-chart svg {
+            width: 100%;
+            height: 280px;
+            display: block;
+        }
+
+        .db-line-grid {
+            stroke: #dbe3ee;
+            stroke-dasharray: 4 4;
+            stroke-width: 1;
+        }
+
+        .db-line-path {
+            fill: none;
+            stroke: var(--azur);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .db-hover-line {
+            stroke: #94a3b8;
+            stroke-width: 1;
+            opacity: 0.8;
+            stroke-dasharray: 4 4;
+            display: none;
+        }
+
+        .db-hover-dot {
+            fill: #f59e0b;
+            stroke: #fff;
+            stroke-width: 2;
+            display: none;
+        }
+
+        .db-line-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 150px;
+            display: none;
+            z-index: 3;
+        }
+
+        .db-line-tooltip-date {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .db-line-tooltip-value {
+            font-size: 1.05rem;
+            color: #1e3a8a;
+        }
+
+        .db-line-labels {
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            gap: 4px;
+            color: #7e8b9b;
+            font-size: 0.76rem;
+        }
+
+        .db-line-labels span {
+            text-align: center;
         }
 
         .db-grid-2 {
@@ -375,7 +537,7 @@
         .bar {
             width: 100%;
             max-width: 64px;
-            background: linear-gradient(180deg, #4f8df4, #3272d9);
+            background: linear-gradient(180deg, #00c4b3, #00a396);
             border-radius: 10px 10px 0 0;
             min-height: 14px;
             transform-origin: bottom;
@@ -621,7 +783,7 @@
         :root {
             --jade: #00c4b3;
             --jade-dim: #00a396;
-            --azur: #5b8def;
+            --azur: #00c4b3;
             --coq: #e2231a;
             --bg: #ffffff;
             --surface: #f8fbff;
@@ -716,7 +878,7 @@
         }
 
         .bar {
-            background: linear-gradient(180deg, var(--azur), #2a6ccf) !important;
+            background: linear-gradient(180deg, var(--azur), #00a396) !important;
         }
 
         .legend-item {
@@ -755,6 +917,58 @@
                                 <div class="db-kpi-label">{{ kpi.label }}</div>
                             </article>
                         {% endfor %}
+                    </section>
+
+                    <section class="db-evolution db-card">
+                        <div class="db-evolution-head">
+                            <div>
+                                <h2>Evolution des tickets</h2>
+                                <div class="db-evolution-sub">{{ periodLabel }}</div>
+                            </div>
+                            <div class="db-evolution-meta">
+                                <a class="db-period {{ selectedPeriod == '30d' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '30d'}) }}">30j</a>
+                                <a class="db-period {{ selectedPeriod == '3m' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '3m'}) }}">3 mois</a>
+                                <a class="db-period {{ selectedPeriod == '6m' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '6m'}) }}">6 mois</a>
+                                <a class="db-period {{ selectedPeriod == '1y' ? 'active' : '' }}" href="{{ path('app_moderation_dashboard', {period: '1y'}) }}">1 an</a>
+                            </div>
+                        </div>
+
+                        <div class="db-line-chart">
+                            <div class="db-line-chart-wrap">
+                                <div class="db-line-y-axis" aria-hidden="true">
+                                    <span>{{ evolutionMax }}</span>
+                                    <span>{{ (evolutionMax * 0.75)|round(0, 'floor') }}</span>
+                                    <span>{{ (evolutionMax * 0.5)|round(0, 'floor') }}</span>
+                                    <span>{{ (evolutionMax * 0.25)|round(0, 'floor') }}</span>
+                                    <span>0</span>
+                                </div>
+
+                                <div class="db-line-chart-main">
+                                    <svg id="db-line-svg" viewBox="0 0 1000 260" preserveAspectRatio="none" aria-label="Evolution des tickets">
+                                        <line class="db-line-grid" x1="0" y1="0" x2="1000" y2="0"></line>
+                                        <line class="db-line-grid" x1="0" y1="65" x2="1000" y2="65"></line>
+                                        <line class="db-line-grid" x1="0" y1="130" x2="1000" y2="130"></line>
+                                        <line class="db-line-grid" x1="0" y1="195" x2="1000" y2="195"></line>
+                                        <line class="db-line-grid" x1="0" y1="260" x2="1000" y2="260"></line>
+
+                                        <polyline class="db-line-path" points="{{ evolutionPoints }}"></polyline>
+                                        <line id="db-hover-line" class="db-hover-line" x1="0" y1="0" x2="0" y2="260"></line>
+                                        <circle id="db-hover-dot" class="db-hover-dot" cx="0" cy="0" r="6"></circle>
+                                    </svg>
+
+                                    <div id="db-line-tooltip" class="db-line-tooltip" aria-hidden="true">
+                                        <div id="db-line-tooltip-date" class="db-line-tooltip-date"></div>
+                                        <div id="db-line-tooltip-value" class="db-line-tooltip-value"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="db-line-labels" style="grid-template-columns: repeat({{ evolutionAxisLabelCount }}, minmax(0, 1fr));">
+                                {% for label in evolutionAxisLabels %}
+                                    <span>{{ label }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </section>
 
                     <section class="db-grid-2">
@@ -854,4 +1068,89 @@
             </div>
         </div>
     </section>
+
+    <script>
+        (function () {
+            const labels = {{ evolutionDisplayLabels|json_encode|raw }};
+            const values = {{ evolutionValues|json_encode|raw }};
+            const maxValue = {{ evolutionMax }};
+
+            const svg = document.getElementById('db-line-svg');
+            const hoverLine = document.getElementById('db-hover-line');
+            const hoverDot = document.getElementById('db-hover-dot');
+            const tooltip = document.getElementById('db-line-tooltip');
+            const tooltipDate = document.getElementById('db-line-tooltip-date');
+            const tooltipValue = document.getElementById('db-line-tooltip-value');
+            const chartMain = document.querySelector('.db-line-chart-main');
+
+            if (!svg || !hoverLine || !hoverDot || !tooltip || !tooltipDate || !tooltipValue || !chartMain || !Array.isArray(labels) || !Array.isArray(values) || values.length === 0) {
+                return;
+            }
+
+            const viewWidth = 1000;
+            const viewHeight = 260;
+
+            function showHover(index, clientX) {
+                const safeIndex = Math.max(0, Math.min(values.length - 1, index));
+                const x = values.length > 1 ? (safeIndex / (values.length - 1)) * viewWidth : 0;
+                const y = viewHeight - ((values[safeIndex] / Math.max(1, maxValue)) * viewHeight);
+
+                hoverLine.setAttribute('x1', String(x));
+                hoverLine.setAttribute('x2', String(x));
+                hoverLine.style.display = 'block';
+
+                hoverDot.setAttribute('cx', String(x));
+                hoverDot.setAttribute('cy', String(y));
+                hoverDot.style.display = 'block';
+
+                tooltipDate.textContent = labels[safeIndex] || '';
+                tooltipValue.textContent = `Tickets créés : ${values[safeIndex]}`;
+                tooltip.style.display = 'block';
+
+                const chartRect = chartMain.getBoundingClientRect();
+                const svgRect = svg.getBoundingClientRect();
+                const xPx = ((x / viewWidth) * svgRect.width);
+                const yPx = ((y / viewHeight) * svgRect.height);
+
+                let tooltipLeft = xPx + 14;
+                let tooltipTop = yPx - 56;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (tooltipLeft + tooltipRect.width > chartRect.width - 4) {
+                    tooltipLeft = xPx - tooltipRect.width - 14;
+                }
+                if (tooltipLeft < 4) {
+                    tooltipLeft = 4;
+                }
+                if (tooltipTop < 4) {
+                    tooltipTop = yPx + 14;
+                }
+
+                tooltip.style.left = `${tooltipLeft}px`;
+                tooltip.style.top = `${tooltipTop}px`;
+            }
+
+            function hideHover() {
+                hoverLine.style.display = 'none';
+                hoverDot.style.display = 'none';
+                tooltip.style.display = 'none';
+            }
+
+            svg.addEventListener('mousemove', function (event) {
+                const rect = svg.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                const idx = Math.round(ratio * (values.length - 1));
+                showHover(idx, event.clientX);
+            });
+
+            svg.addEventListener('mouseenter', function (event) {
+                const rect = svg.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                const idx = Math.round(ratio * (values.length - 1));
+                showHover(idx, event.clientX);
+            });
+
+            svg.addEventListener('mouseleave', hideHover);
+        })();
+    </script>
 {% endblock %}
