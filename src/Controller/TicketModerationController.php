@@ -893,6 +893,7 @@ final class TicketModerationController extends AbstractController
         string $id,
         Request $request,
         SignalementRepository $signalementRepository,
+        MotifGraviteRepository $motifGraviteRepository,
         EntityManagerInterface $entityManager,
     ): Response {
         $ticket = $signalementRepository->find($id);
@@ -909,6 +910,7 @@ final class TicketModerationController extends AbstractController
         $suggestion = trim((string) $request->request->get('suggestion', ''));
         $humanResponse = trim((string) $request->request->get('human_response', ''));
         $decision = (string) $request->request->get('suggestion_decision', 'pending');
+        $rejectedTargetStatusRaw = (string) $request->request->get('rejected_target_status', '');
 
         $ticket->setSuggestion($suggestion !== '' ? $suggestion : null);
         $ticket->setSuggestionHumanResponse($humanResponse !== '' ? $humanResponse : null);
@@ -920,11 +922,36 @@ final class TicketModerationController extends AbstractController
         };
         $ticket->setSuggestionValidated($suggestionValidated);
 
+        if ($decision === 'approved') {
+            $ticket->setStatus(SignalementStatus::Valide);
+        } elseif ($decision === 'rejected') {
+            $targetStatus = SignalementStatus::tryFrom($rejectedTargetStatusRaw);
+            if ($targetStatus === null || !in_array($targetStatus, SignalementStatus::moderationCases(), true)) {
+                $targetStatus = SignalementStatus::SansSuite;
+            }
+
+            $ticket->setStatus($targetStatus);
+        }
+
         $ticket->setReviewedAt(new \DateTimeImmutable());
         $user = $this->getUser();
         if ($user instanceof User) {
             $ticket->setReviewedBy($user);
         }
+
+        $confianceDelta = match ($ticket->getStatus()) {
+            SignalementStatus::SansSuite => -15,
+            SignalementStatus::Valide, SignalementStatus::EscaladeJuridique => 5,
+            default => 0,
+        };
+
+        $confianceScore = max(0, min(100, $ticket->getConfianceScore() + $confianceDelta));
+        $ticket->setConfianceScore($confianceScore);
+
+        $gravite = $ticket->getMotif() !== null
+            ? ($motifGraviteRepository->find($ticket->getMotif())?->getGravite() ?? 1)
+            : 1;
+        $ticket->setPrioriteScore($this->computePriorityScore($gravite, $ticket->getConfianceScore()));
 
         $entityManager->flush();
 

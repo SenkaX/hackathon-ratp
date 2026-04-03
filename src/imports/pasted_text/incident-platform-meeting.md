@@ -65,7 +65,7 @@ Collecte et facilité d’ajout de données (QR codes, scraping)
 
 Modèle inspiré de Jira pour structuration et conformité
 
-    Structuration “projets” par entité/localisation (ex. “Bus Paris n°X”) avec statuts de tickets (accident, attaque, objet perdu, validé, classé sans suite).
+    Structuration “Centre Bus” par entité/localisation (ex. “Bus Paris n°X”) avec statuts de tickets (accident, attaque, objet perdu, validé, classé sans suite).
 
     Méthodologie agile et inspiration des workflows Jira pour lisibilité et conformité RGPD/sécurité.
 
@@ -79,7 +79,7 @@ Portée initiale et périmètre du hackathon
 
     Contrainte: seulement 5 jours de développement.
 
-    Périmètre: focus “bus” et même 3 stations de bus identifiées comme trois “projets” distincts.
+    Périmètre: focus “bus” et même 3 stations de bus identifiées comme trois “Centre Bus” distincts.
 
     Prioriser les fonctionnalités essentielles et l’automatisation IA de base.
 
@@ -99,7 +99,7 @@ Prochaines étapes
 
     Définir le workflow de ticket: déclencheurs, statut “en attente de validation (humaine)”, transitions, automatisations post-décision.
 
-    Prototyper l’interface inspirée de Jira: projets “Bus Paris (stations x3)”, vue statuts, fiche ticket.
+    Prototyper l’interface inspirée de Jira: Centre Bus “Bus Paris (stations x3)”, vue statuts, fiche ticket.
 
     Mettre en place la création automatique de tickets (caméra double clic, appel centrale, signalements clients).
 

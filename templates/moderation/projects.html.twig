@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Projets - Moderation{% endblock %}
+{% block title %}Centre Bus - Moderation{% endblock %}
 
 {% block body %}
     <style>
@@ -203,6 +203,16 @@
             color: #fff;
             font-size: 1.3rem;
             flex-shrink: 0;
+        }
+
+        .project-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .project-head h2 {
@@ -500,17 +510,26 @@
                 <main class="page">
                     <div class="header-row">
                         <div>
-                            <h1>Projets</h1>
-                            <p>Gestion des incidents par station de bus</p>
+                            <h1>Centre Bus</h1>
+                            <p>Gestion des incidents par centre bus</p>
                         </div>
-                        <button class="btn-primary">+ Nouveau projet</button>
+                        <button class="btn-primary">+ Nouveau centre bus</button>
                     </div>
 
                     <section class="projects-grid">
                         {% for project in projects %}
                             <article class="project-card">
                                 <div class="project-head">
-                                    <div class="project-icon"></div>
+                                    <div class="project-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" focusable="false">
+                                            <rect x="4" y="3" width="16" height="14" rx="2"></rect>
+                                            <line x1="4" y1="8" x2="20" y2="8"></line>
+                                            <line x1="8" y1="12" x2="8" y2="12"></line>
+                                            <line x1="16" y1="12" x2="16" y2="12"></line>
+                                            <line x1="7" y1="17" x2="7" y2="20"></line>
+                                            <line x1="17" y1="17" x2="17" y2="20"></line>
+                                        </svg>
+                                    </div>
                                     <div>
                                         <h2>{{ project.name }}</h2>
                                         <div class="project-subtitle">{{ project.subtitle }}</div>

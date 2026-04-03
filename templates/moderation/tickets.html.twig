@@ -829,6 +829,10 @@
             resize: vertical;
         }
 
+        .ticket-ai-target-status[hidden] {
+            display: none;
+        }
+
         .ticket-modal-actions {
             display: flex;
             justify-content: flex-end;
@@ -1147,13 +1151,24 @@
                         <select id="ticket-ai-decision" name="suggestion_decision">
                             <option value="pending">Pas de decision</option>
                             <option value="approved">Suggestion validee</option>
-                            <option value="rejected">Suggestion rejetee</option>
+                            <option value="rejected">Suggestion rejetée</option>
+                        </select>
+                    </div>
+
+                    <div id="ticket-ai-target-status-wrap" class="ticket-ai-target-status" hidden>
+                        <label for="ticket-ai-target-status">Ou envoyer le ticket ?</label>
+                        <select id="ticket-ai-target-status" name="rejected_target_status">
+                            <option value="sans_suite">Classe sans suite</option>
+                            <option value="escalade_juridique">Transmis au juridique</option>
+                            <option value="en_cours">En cours</option>
+                            <option value="resolu">Resolu</option>
+                            <option value="en_attente_validation">En attente de validation</option>
                         </select>
                     </div>
 
                     <div>
                         <label for="ticket-ai-human-response">Reponse humaine</label>
-                        <textarea id="ticket-ai-human-response" name="human_response" placeholder="Expliquer pourquoi la suggestion IA est validee ou rejetee..."></textarea>
+                        <textarea id="ticket-ai-human-response" name="human_response" placeholder="Expliquer pourquoi la suggestion IA est validee ou rejetée..."></textarea>
                     </div>
                 </div>
 
@@ -1172,9 +1187,21 @@
         const ticketAiToken = document.getElementById('ticket-ai-token');
         const ticketAiSuggestion = document.getElementById('ticket-ai-suggestion');
         const ticketAiDecision = document.getElementById('ticket-ai-decision');
+        const ticketAiTargetStatusWrap = document.getElementById('ticket-ai-target-status-wrap');
+        const ticketAiTargetStatus = document.getElementById('ticket-ai-target-status');
         const ticketAiHumanResponse = document.getElementById('ticket-ai-human-response');
         const ticketAiSubtitle = document.getElementById('ticket-ai-modal-subtitle');
         const ticketAiCancel = document.getElementById('ticket-ai-cancel');
+
+        function updateAiDecisionUi() {
+            if (!ticketAiDecision || !ticketAiTargetStatusWrap || !ticketAiTargetStatus) {
+                return;
+            }
+
+            const isRejected = ticketAiDecision.value === 'rejected';
+            ticketAiTargetStatusWrap.hidden = !isRejected;
+            ticketAiTargetStatus.required = isRejected;
+        }
 
         function openTicketAiModal(ticketEl) {
             if (!ticketEl || !ticketAiModal || !ticketAiForm) {
@@ -1188,8 +1215,11 @@
             ticketAiToken.value = ticketEl.getAttribute('data-ai-token') || '';
             ticketAiSuggestion.value = ticketEl.getAttribute('data-ai-suggestion') || '';
             ticketAiDecision.value = ticketEl.getAttribute('data-ai-decision') || 'pending';
+            ticketAiTargetStatus.value = ticketEl.getAttribute('data-status') || 'sans_suite';
             ticketAiHumanResponse.value = ticketEl.getAttribute('data-ai-human-response') || '';
             ticketAiSubtitle.textContent = `${ticketId} - ${ticketTitle}`;
+
+            updateAiDecisionUi();
 
             ticketAiModal.hidden = false;
         }
@@ -1202,6 +1232,10 @@
 
         if (ticketAiCancel) {
             ticketAiCancel.addEventListener('click', closeTicketAiModal);
+        }
+
+        if (ticketAiDecision) {
+            ticketAiDecision.addEventListener('change', updateAiDecisionUi);
         }
 
         if (ticketAiModal) {
