@@ -892,7 +892,7 @@
                     <div class="kanban-column">
                         <div class="column-header" style="background-color: {% if lane.color == 'bg-yellow-500' %}#eab308{% elseif lane.color == 'bg-green-500' %}#22c55e{% elseif lane.color == 'bg-blue-500' %}#3b82f6{% elseif lane.color == 'bg-gray-500' %}#6b7280{% elseif lane.color == 'bg-purple-500' %}#a855f7{% elseif lane.color == 'bg-emerald-500' %}#10b981{% endif %}">
                             <div class="column-title">
-                                📋 {{ lane.label }}
+                                 {{ lane.label }}
                             </div>
                             <div class="column-count">{{ laneTickets|length }}</div>
                         </div>
@@ -915,9 +915,9 @@
                                         <span class="ticket-category">{{ ticket.motif.value }}</span>
 
                                         <div class="ticket-meta">
-                                            <span>📍 {{ ticket.stop ? ticket.stop.label : 'Aucun arrêt' }}</span>
-                                            <span>🕐 {{ ticket.submittedAt|date('d/m/Y H:i') }}</span>
-                                            {# <span>🛡️ Confiance: {{ ticket.confianceScore }}%</span> #}
+                                            <span> {{ ticket.stop ? ticket.stop.label : 'Aucun arrêt' }}</span>
+                                            <span> {{ ticket.submittedAt|date('d/m/Y H:i') }}</span>
+                                            {# <span>️ Confiance: {{ ticket.confianceScore }}%</span> #}
                                         </div>
 
                                         {% if ticket.suggestion is not empty %}
@@ -939,8 +939,8 @@
                                                 {% endfor %}
                                             </select>
 
-                                            <button type="submit" class="btn-save">💾 Enregistrer</button>
-                                            <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view">👁️ Voir</a>
+                                            <button type="submit" class="btn-save"> Enregistrer</button>
+                                            <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view">️ Voir</a>
                                         </form>
 
                                         {% if ticket.reviewedAt %}

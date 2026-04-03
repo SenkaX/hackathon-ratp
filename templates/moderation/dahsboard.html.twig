@@ -668,13 +668,13 @@
                                     </div>
                                     <p>{{ ticket.description }}</p>
                                     <div class="recent-meta">
-                                        <span>📍 {{ ticket.location }}</span>
-                                        <span>📨 {{ ticket.source }}</span>
-                                        <span>🕐 {{ ticket.date }}</span>
+                                        <span>{{ ticket.location }}</span>
+                                        <span>{{ ticket.source }}</span>
+                                        <span>{{ ticket.date }}</span>
                                     </div>
                                     <div class="recent-foot">
-                                        <span>🛡️ Confiance: {{ ticket.confidence }}%</span>
-                                        <span>👤 {{ ticket.assigned }}</span>
+                                        <span>Confiance: {{ ticket.confidence }}%</span>
+                                        <span>{{ ticket.assigned }}</span>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -685,7 +685,7 @@
                             {% for hot in hotspots %}
                                 <div class="hot-item">
                                     <div class="hot-item-head">
-                                        <span>📍 {{ hot.place }}</span>
+                                        <span>{{ hot.place }}</span>
                                         <span class="hot-level" style="background:{% if hot.level == 'Haute' %}#fee2e2;color:#b91c1c{% elseif hot.level == 'Moyenne' %}#fef3c7;color:#b45309{% else %}#ecfccb;color:#4d7c0f{% endif %};">{{ hot.level }}</span>
                                     </div>
                                     <div class="hot-meta">
@@ -694,7 +694,7 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <div class="hot-note">💡 Ces zones necessitent une attention particuliere aux horaires indiques.</div>
+                            <div class="hot-note">Ces zones necessitent une attention particuliere aux horaires indiques.</div>
                         </article>
                     </section>
                 </div>

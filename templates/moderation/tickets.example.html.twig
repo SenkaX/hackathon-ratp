@@ -653,11 +653,11 @@
                 <span class="brand-label">Modération · Incidents</span>
             </div>
             <div class="topbar-nav">
-                <a href="#" class="nav-item active">📋 Kanban</a>
-                <a href="#" class="nav-item">🗺️ Carte</a>
-                <a href="#" class="nav-item">📊 Statistiques</a>
+                <a href="#" class="nav-item active"> Kanban</a>
+                <a href="#" class="nav-item">️ Carte</a>
+                <a href="#" class="nav-item"> Statistiques</a>
                 {% if is_granted('ROLE_ADMIN') %}
-                    <a href="#" class="nav-item">⚙️ QR Codes</a>
+                    <a href="#" class="nav-item">️ QR Codes</a>
                 {% endif %}
             </div>
         </div>
@@ -671,17 +671,17 @@
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <span class="sidebar-section">Vue</span>
-            <a href="#" class="sidebar-link active"><span class="sidebar-icon">📋</span> Kanban</a>
-            <a href="#" class="sidebar-link"><span class="sidebar-icon">📄</span> Liste</a>
-            <a href="#" class="sidebar-link"><span class="sidebar-icon">🗺️</span> Carte</a>
+            <a href="#" class="sidebar-link active"><span class="sidebar-icon"></span> Kanban</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Liste</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon">️</span> Carte</a>
 
             <span class="sidebar-section">Analyse</span>
-            <a href="#" class="sidebar-link"><span class="sidebar-icon">📊</span> Statistiques</a>
-            <a href="#" class="sidebar-link"><span class="sidebar-icon">🔥</span> Hotspots</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Statistiques</a>
+            <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> Hotspots</a>
 
             {% if is_granted('ROLE_ADMIN') %}
                 <span class="sidebar-section">Admin</span>
-                <a href="#" class="sidebar-link"><span class="sidebar-icon">🔲</span> QR Codes</a>
+                <a href="#" class="sidebar-link"><span class="sidebar-icon"></span> QR Codes</a>
             {% endif %}
         </aside>
 
@@ -753,10 +753,10 @@
             {% if app.flashes('success') or app.flashes('error') %}
             <div class="alerts-zone">
                 {% for message in app.flashes('success') %}
-                    <div class="alert-msg alert-success">✓ {{ message }}</div>
+                    <div class="alert-msg alert-success"> {{ message }}</div>
                 {% endfor %}
                 {% for message in app.flashes('error') %}
-                    <div class="alert-msg alert-error">✕ {{ message }}</div>
+                    <div class="alert-msg alert-error"> {{ message }}</div>
                 {% endfor %}
             </div>
             {% endif %}
@@ -812,18 +812,18 @@
 
                                             <div class="ticket-meta">
                                                 <div class="ticket-meta-row">
-                                                    <span class="ticket-meta-icon">📍</span>
+                                                    <span class="ticket-meta-icon"></span>
                                                     {{ ticket.stop ? ticket.stop.label : 'Arrêt inconnu' }}
                                                 </div>
                                                 <div class="ticket-meta-row">
-                                                    <span class="ticket-meta-icon">🕐</span>
+                                                    <span class="ticket-meta-icon"></span>
                                                     {{ ticket.submittedAt|date('d/m/Y à H:i') }}
                                                 </div>
                                             </div>
 
                                             {% if ticket.suggestion is not empty %}
                                                 <div class="ai-block">
-                                                    <span class="ai-block-label">✦ Suggestion IA</span>
+                                                    <span class="ai-block-label"> Suggestion IA</span>
                                                     <p class="ai-block-text">{{ ticket.suggestion|nl2br }}</p>
                                                 </div>
                                             {% endif %}
@@ -843,8 +843,8 @@
                                                 </select>
 
                                                 <div class="ticket-actions-row">
-                                                    <button type="submit" class="btn-save">💾 Sauver</button>
-                                                    <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view">👁 Voir</a>
+                                                    <button type="submit" class="btn-save"> Sauver</button>
+                                                    <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view"> Voir</a>
                                                 </div>
                                             </form>
 

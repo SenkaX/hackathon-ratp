@@ -511,7 +511,7 @@
                         {% for project in projects %}
                             <article class="project-card">
                                 <div class="project-head">
-                                    <div class="project-icon">📍</div>
+                                    <div class="project-icon"></div>
                                     <div>
                                         <h2>{{ project.name }}</h2>
                                         <div class="project-subtitle">{{ project.subtitle }}</div>
@@ -520,7 +520,7 @@
 
                                 <div class="project-desc">{{ project.description }}</div>
 
-                                <div class="section-label">🚌 Lignes desservies</div>
+                                <div class="section-label"> Lignes desservies</div>
                                 <div class="line-chips">
                                     {% for line in project.lines %}
                                         <span class="chip {{ line == '+4' ? 'more' : '' }}">{{ line }}</span>

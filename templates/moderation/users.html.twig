@@ -468,14 +468,14 @@
                                         <div>
                                             <h2 class="user-name">{{ u.name }}</h2>
                                             <span class="role-chip" style="{% if u.role == 'Admin' %}background:#fee2e2;color:#dc2626{% elseif u.role == 'Stagiaire' %}background:#dcfce7;color:#16a34a{% elseif u.role == 'RH' %}background:#e0e7ff;color:#4f46e5{% else %}background:#e0e7ff;color:#4f46e5{% endif %};">{{ u.role }}</span>
-                                            <div class="user-email">✉ {{ u.email }}</div>
+                                            <div class="user-email"> {{ u.email }}</div>
                                         </div>
                                     </div>
 
                                     <div class="user-desc">{{ u.description }}</div>
 
                                     {% if u.systemNote %}
-                                        <div class="system-note">🤖 {{ u.systemNote }}</div>
+                                        <div class="system-note"> {{ u.systemNote }}</div>
                                     {% else %}
                                         <div class="stats">
                                             <div class="stat-box s-assigned">
