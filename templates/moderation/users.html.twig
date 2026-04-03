@@ -170,6 +170,10 @@
             font-weight: 600;
             font-size: 0.95rem;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
         }
 
         .users-grid {
@@ -443,12 +447,16 @@
                 </header>
 
                 <main class="page">
+                    {% for message in app.flashes('success') %}
+                        <div style="margin-bottom:16px;padding:12px 14px;border-radius:12px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">{{ message }}</div>
+                    {% endfor %}
+
                     <div class="header-row">
                         <div>
                             <h1>Utilisateurs</h1>
                             <p>Gestion des accès et rôles</p>
                         </div>
-                        <button class="btn-primary">+ Nouvel utilisateur</button>
+                        <a href="{{ path('app_moderation_user_new') }}" class="btn-primary">+ Nouvel utilisateur</a>
                     </div>
 
                     <section class="users-grid">

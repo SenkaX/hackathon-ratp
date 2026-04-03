@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -74,49 +75,80 @@ final class TicketModerationController extends AbstractController
     }
 
     #[Route('/users', name: 'app_moderation_users', methods: ['GET'])]
-    public function users(): Response
+    public function users(
+        UserRepository $userRepository,
+        SignalementRepository $signalementRepository,
+    ): Response
     {
-        $users = [
-            [
-                'name' => 'Marie Dupont',
-                'role' => 'Admin',
-                'roleColor' => '#6366f1',
-                'email' => 'marie.dupont@ratp.fr',
-                'description' => 'Acces complet - Validation et decisions strategiques',
-                'assigned' => 2,
-                'created' => 0,
-                'pending' => 0,
-                'inProgress' => 0,
-                'systemNote' => null,
-            ],
-            [
-                'name' => 'Thomas Martin',
-                'role' => 'RH',
-                'roleColor' => '#6366f1',
-                'email' => 'thomas.martin@ratp.fr',
-                'description' => 'Gestion des incidents RH et comportements',
-                'assigned' => 3,
-                'created' => 0,
-                'pending' => 1,
-                'inProgress' => 1,
-                'systemNote' => null,
-            ],
-            [
-                'name' => 'Sophie Bernard',
-                'role' => 'Manager',
-                'roleColor' => '#6366f1',
-                'email' => 'sophie.bernard@ratp.fr',
-                'description' => 'Supervision des operations et coordination avec les equipes terrain',
-                'assigned' => 3,
-                'created' => 0,
-                'pending' => 1,
-                'inProgress' => 1,
-                'systemNote' => null       
-            ],
-        ];
+        $users = $this->buildUsersViewModels($userRepository, $signalementRepository);
 
         return $this->render('moderation/users.html.twig', [
             'users' => $users,
+        ]);
+    }
+
+    #[Route('/users/new', name: 'app_moderation_user_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function newUser(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        UserRepository $userRepository,
+    ): Response {
+        $roleOptions = $this->userRoleOptions();
+        $formData = [
+            'email' => '',
+            'password' => '',
+            'password_confirm' => '',
+            'role' => User::ROLE_MANAGER,
+        ];
+        $errors = [];
+
+        if ($request->isMethod('POST')) {
+            $formData['email'] = trim((string) $request->request->get('email', ''));
+            $formData['password'] = (string) $request->request->get('password', '');
+            $formData['password_confirm'] = (string) $request->request->get('password_confirm', '');
+            $formData['role'] = (string) $request->request->get('role', User::ROLE_MANAGER);
+
+            if ($formData['email'] === '' || !filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Adresse email invalide.';
+            }
+
+            if (strlen($formData['password']) < 8) {
+                $errors[] = 'Le mot de passe doit contenir au moins 8 caracteres.';
+            }
+
+            if ($formData['password'] !== $formData['password_confirm']) {
+                $errors[] = 'Les mots de passe ne correspondent pas.';
+            }
+
+            if (!array_key_exists($formData['role'], $roleOptions)) {
+                $errors[] = 'Rôle invalide.';
+            }
+
+            if ($userRepository->findOneBy(['email' => $formData['email']]) !== null) {
+                $errors[] = 'Un utilisateur avec cette adresse email existe deja.';
+            }
+
+            if ($errors === []) {
+                $user = (new User())
+                    ->setEmail($formData['email'])
+                    ->setRoles([$formData['role']]);
+                $user->setPassword($passwordHasher->hashPassword($user, $formData['password']));
+
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Utilisateur cree avec succes.');
+
+                return $this->redirectToRoute('app_moderation_users');
+            }
+        }
+
+        return $this->render('moderation/user_new.html.twig', [
+            'formData' => $formData,
+            'errors' => $errors,
+            'roleOptions' => $roleOptions,
         ]);
     }
 
@@ -699,5 +731,121 @@ final class TicketModerationController extends AbstractController
         return in_array($route, ['app_moderation_tickets'], true)
             ? $route
             : 'app_moderation_tickets';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function userRoleOptions(): array
+    {
+        return [
+            User::ROLE_ADMIN => 'Admin',
+            User::ROLE_RH => 'RH',
+            User::ROLE_MANAGER => 'Manager',
+        ];
+    }
+
+    /**
+     * @return array<int, array{name: string, role: string, roleColor: string, email: string, description: string, assigned: int, created: int, pending: int, inProgress: int, systemNote: null}>
+     */
+    private function buildUsersViewModels(UserRepository $userRepository, SignalementRepository $signalementRepository): array
+    {
+        $ticketCountsByRole = [
+            User::ROLE_ADMIN => ['assigned' => 0, 'pending' => 0, 'inProgress' => 0],
+            User::ROLE_RH => ['assigned' => 0, 'pending' => 0, 'inProgress' => 0],
+            User::ROLE_MANAGER => ['assigned' => 0, 'pending' => 0, 'inProgress' => 0],
+            User::ROLE_MODERATOR => ['assigned' => 0, 'pending' => 0, 'inProgress' => 0],
+        ];
+
+        foreach ($signalementRepository->findAll() as $ticket) {
+            $assignedRole = $ticket->getAssignedRole();
+            if ($assignedRole === null || !isset($ticketCountsByRole[$assignedRole])) {
+                continue;
+            }
+
+            ++$ticketCountsByRole[$assignedRole]['assigned'];
+
+            if ($ticket->getStatus() === SignalementStatus::EnAttenteValidation) {
+                ++$ticketCountsByRole[$assignedRole]['pending'];
+            }
+
+            if ($ticket->getStatus() === SignalementStatus::EnCours) {
+                ++$ticketCountsByRole[$assignedRole]['inProgress'];
+            }
+        }
+
+        $roleCountByValue = [];
+        foreach ($userRepository->findBy([], ['email' => 'ASC']) as $user) {
+            $primaryRole = $this->primaryRoleForUser($user->getRoles());
+            $roleCountByValue[$primaryRole] = ($roleCountByValue[$primaryRole] ?? 0) + 1;
+        }
+
+        $result = [];
+        foreach ($userRepository->findBy([], ['email' => 'ASC']) as $user) {
+            $primaryRole = $this->primaryRoleForUser($user->getRoles());
+            $result[] = [
+                'name' => $this->displayNameFromEmail((string) $user->getEmail()),
+                'role' => $this->userRoleOptions()[$primaryRole] ?? 'Utilisateur',
+                'roleColor' => $this->roleColorFor($primaryRole),
+                'email' => (string) $user->getEmail(),
+                'description' => $this->roleDescriptionFor($primaryRole),
+                'assigned' => $ticketCountsByRole[$primaryRole]['assigned'] ?? 0,
+                'created' => $roleCountByValue[$primaryRole] ?? 0,
+                'pending' => $ticketCountsByRole[$primaryRole]['pending'] ?? 0,
+                'inProgress' => $ticketCountsByRole[$primaryRole]['inProgress'] ?? 0,
+                'systemNote' => null,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param list<string> $roles
+     */
+    private function primaryRoleForUser(array $roles): string
+    {
+        foreach ([User::ROLE_ADMIN, User::ROLE_RH, User::ROLE_MANAGER, User::ROLE_MODERATOR] as $role) {
+            if (in_array($role, $roles, true)) {
+                return $role;
+            }
+        }
+
+        return User::ROLE_MODERATOR;
+    }
+
+    private function displayNameFromEmail(string $email): string
+    {
+        $localPart = strstr($email, '@', true) ?: $email;
+        $parts = preg_split('/[._-]+/', $localPart) ?: [$localPart];
+        $parts = array_filter(array_map(static fn (string $part): string => trim($part), $parts));
+
+        if ($parts === []) {
+            return $email;
+        }
+
+        return implode(' ', array_map(static fn (string $part): string => ucfirst($part), $parts));
+    }
+
+    private function roleColorFor(string $role): string
+    {
+        return match ($role) {
+            User::ROLE_ADMIN => '#dc2626',
+            User::ROLE_RH => '#4f46e5',
+            User::ROLE_MANAGER => '#0f766e',
+            User::ROLE_MODERATOR => '#7c3aed',
+            default => '#6366f1',
+        };
+    }
+
+    private function roleDescriptionFor(string $role): string
+    {
+        return match ($role) {
+            User::ROLE_ADMIN => 'Acces complet - Validation et decisions strategiques',
+            User::ROLE_RH => 'Gestion des incidents RH et comportements',
+            User::ROLE_MANAGER => 'Supervision des operations et coordination avec les equipes terrain',
+            User::ROLE_MODERATOR => 'Tri initial, qualification et suivi des signalements',
+            default => 'Utilisateur de la plateforme',
+        };
     }
 }
