@@ -4,12 +4,11 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
         .users-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #5b8def;
             color: #fff;
             font-weight: 700;
             font-size: 1.4rem;
@@ -83,12 +82,12 @@
 
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #3272d9;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #3272d9;
             font-weight: 700;
         }
 
@@ -131,7 +130,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -206,7 +205,7 @@
             width: 64px;
             height: 64px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #2f4c99, #5b8def);
+            background: linear-gradient(135deg, #5b8def, #5b8def);
             color: #fff;
             display: grid;
             place-items: center;
@@ -329,7 +328,7 @@
         :root {
             --jade: #00c4b3;
             --jade-dim: #00a396;
-            --azur: #003ca6;
+            --azur: #5b8def;
             --bg: #ffffff;
             --surface: #f8fbff;
             --border: #d7e2ef;
@@ -341,7 +340,7 @@
         .users-shell,
         .users-layout {
             background: var(--bg) !important;
-            font-family: 'DM Sans', sans-serif !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
             color: var(--text) !important;
         }
 
@@ -353,7 +352,7 @@
         .brand-logo,
         .avatar,
         .user-icon {
-            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+            background: var(--azur) !important;
         }
 
         .sidebar-link {
@@ -464,7 +463,7 @@
                             <article class="user-card">
                                 <div class="user-body">
                                     <div class="user-head">
-                                        <div class="user-icon">◯</div>
+                                        <div class="user-icon">{{ u.name|slice(0, 1)|upper }}</div>
                                         <div>
                                             <h2 class="user-name">{{ u.name }}</h2>
                                             <span class="role-chip" style="{% if u.role == 'Admin' %}background:#fee2e2;color:#dc2626{% elseif u.role == 'Stagiaire' %}background:#dcfce7;color:#16a34a{% elseif u.role == 'RH' %}background:#e0e7ff;color:#4f46e5{% else %}background:#e0e7ff;color:#4f46e5{% endif %};">{{ u.role }}</span>
@@ -479,19 +478,19 @@
                                     {% else %}
                                         <div class="stats">
                                             <div class="stat-box s-assigned">
-                                                <div class="stat-label">⟡ Assignés</div>
+                                                <div class="stat-label">Assignés</div>
                                                 <div class="stat-value">{{ u.assigned }}</div>
                                             </div>
                                             <div class="stat-box s-created">
-                                                <div class="stat-label">⟡ Créés</div>
+                                                <div class="stat-label">Créés</div>
                                                 <div class="stat-value">{{ u.created }}</div>
                                             </div>
                                             <div class="stat-box s-pending">
-                                                <div class="stat-label">⟡ En attente</div>
+                                                <div class="stat-label">En attente</div>
                                                 <div class="stat-value">{{ u.pending }}</div>
                                             </div>
                                             <div class="stat-box s-progress">
-                                                <div class="stat-label">⟡ En cours</div>
+                                                <div class="stat-label">En cours</div>
                                                 <div class="stat-value">{{ u.inProgress }}</div>
                                             </div>
                                         </div>

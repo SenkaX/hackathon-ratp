@@ -4,12 +4,11 @@
 
 {% block body %}
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
         .projects-shell {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f6f8fb 0%, #ecf2f9 100%);
-            font-family: 'Inter', sans-serif;
+            background: #f3f6fb;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
 
@@ -39,7 +38,7 @@
             width: 40px;
             height: 40px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            background: #5b8def;
             color: #fff;
             font-weight: 700;
             font-size: 1.4rem;
@@ -83,12 +82,12 @@
 
         .sidebar-link:hover {
             background: #e2e8f0;
-            color: #1e3a8a;
+            color: #3272d9;
         }
 
         .sidebar-link.active {
             background: #e0e7ff;
-            color: #1e40af;
+            color: #3272d9;
             font-weight: 700;
         }
 
@@ -131,7 +130,7 @@
             width: 42px;
             height: 42px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            background: #009aa6;
             color: #fff;
             display: grid;
             place-items: center;
@@ -198,7 +197,7 @@
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #2f4c99, #5b8def);
+            background: linear-gradient(135deg, #5b8def, #5b8def);
             display: grid;
             place-items: center;
             color: #fff;
@@ -340,7 +339,7 @@
         .overview-value {
             font-size: 1.8rem;
             font-weight: 800;
-            color: #2f4c99;
+            color: #5b8def;
         }
 
         @media (max-width: 1200px) {
@@ -371,7 +370,7 @@
         :root {
             --jade: #00c4b3;
             --jade-dim: #00a396;
-            --azur: #003ca6;
+            --azur: #5b8def;
             --bg: #ffffff;
             --surface: #f8fbff;
             --border: #d7e2ef;
@@ -383,7 +382,7 @@
         .projects-shell,
         .projects-layout {
             background: var(--bg) !important;
-            font-family: 'DM Sans', sans-serif !important;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
             color: var(--text) !important;
         }
 
@@ -395,7 +394,7 @@
         .brand-logo,
         .avatar,
         .project-icon {
-            background: linear-gradient(135deg, var(--azur), var(--jade)) !important;
+            background: var(--azur) !important;
         }
 
         .sidebar-link {
@@ -529,19 +528,19 @@
 
                                 <div class="project-stats">
                                     <div>
-                                        <div class="stat-label">⟡ Total</div>
+                                        <div class="stat-label">Total</div>
                                         <div class="stat-value">{{ project.total }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label" style="color:#f59e0b;">⟡ En attente</div>
+                                        <div class="stat-label" style="color:#f59e0b;">En attente</div>
                                         <div class="stat-value">{{ project.pending }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label">⟡ En cours</div>
+                                        <div class="stat-label">En cours</div>
                                         <div class="stat-value">{{ project.inProgress }}</div>
                                     </div>
                                     <div>
-                                        <div class="stat-label" style="color:#ef4444;">⟡ Critiques</div>
+                                        <div class="stat-label" style="color:#ef4444;">Critiques</div>
                                         <div class="stat-value">{{ project.critical }}</div>
                                     </div>
                                 </div>
