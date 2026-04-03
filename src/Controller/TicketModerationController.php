@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\BusStop;
+use App\Entity\Signalement;
 use App\Entity\User;
 use App\Enum\SignalementMotif;
 use App\Enum\SignalementStatus;
@@ -13,6 +14,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route('/moderation/tickets')]
 final class TicketModerationController extends AbstractController
@@ -703,6 +707,8 @@ final class TicketModerationController extends AbstractController
         SignalementRepository $signalementRepository,
         MotifGraviteRepository $motifGraviteRepository,
         EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+        HttpClientInterface $client,
     ): Response {
         $ticket = $signalementRepository->find($id);
 
@@ -723,6 +729,7 @@ final class TicketModerationController extends AbstractController
         }
 
         $reviewNote = trim((string) $request->request->get('review_note', ''));
+        $previousStatus = $ticket->getStatus();
 
         $ticket->setStatus($status);
         $ticket->setReviewedAt(new \DateTimeImmutable());
@@ -748,6 +755,7 @@ final class TicketModerationController extends AbstractController
         $ticket->setPrioriteScore($this->computePriorityScore($gravite, $ticket->getConfianceScore()));
 
         $entityManager->flush();
+        $this->notifyStatusUpdateWebhook($ticket, $previousStatus, $status, $client, $logger);
 
         $this->addFlash('success', 'Statut mis a jour.');
 
@@ -761,6 +769,8 @@ final class TicketModerationController extends AbstractController
         SignalementRepository $signalementRepository,
         MotifGraviteRepository $motifGraviteRepository,
         EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+        HttpClientInterface $client,
     ): Response {
         $ticket = $signalementRepository->find($id);
 
@@ -775,6 +785,7 @@ final class TicketModerationController extends AbstractController
             return $this->json(['error' => 'Invalid status'], 400);
         }
 
+        $previousStatus = $ticket->getStatus();
         $ticket->setStatus($status);
         $ticket->setReviewedAt(new \DateTimeImmutable());
 
@@ -798,8 +809,83 @@ final class TicketModerationController extends AbstractController
         $ticket->setPrioriteScore($this->computePriorityScore($gravite, $ticket->getConfianceScore()));
 
         $entityManager->flush();
+        $this->notifyStatusUpdateWebhook($ticket, $previousStatus, $status, $client, $logger);
 
         return $this->json(['success' => true, 'status' => $status->value]);
+    }
+
+    private function notifyStatusUpdateWebhook(
+        Signalement $ticket,
+        SignalementStatus $previousStatus,
+        SignalementStatus $newStatus,
+        HttpClientInterface $client,
+        LoggerInterface $logger,
+    ): void {
+        if ($previousStatus === $newStatus) {
+            return;
+        }
+
+        $webhookUrl = (string) $this->getParameter('n8n_webhook_update_url');
+        if ($webhookUrl === '') {
+            $logger->warning('N8N status update webhook URL is empty, webhook was not called.', [
+                'signalement_id' => $ticket->getId(),
+            ]);
+
+            return;
+        }
+
+        $ticketUrl = null;
+        $accessToken = $ticket->getAccessToken();
+        if ($accessToken !== null && $accessToken !== '') {
+            $ticketPath = $this->generateUrl(
+                'app_ticket_show',
+                [
+                    'id' => $ticket->getId(),
+                    'token' => $accessToken,
+                ],
+                UrlGeneratorInterface::ABSOLUTE_PATH
+            );
+            $ticketUrl = rtrim((string) $this->getParameter('app.url'), '/').$ticketPath;
+        }
+
+        $payload = [
+            'signalement_id' => $ticket->getId(),
+            'email' => $ticket->getEmail(),
+            'old_status' => $previousStatus->value,
+            'old_status_label' => $previousStatus->label(),
+            'new_status' => $newStatus->value,
+            'new_status_label' => $newStatus->label(),
+            'reviewed_at' => $ticket->getReviewedAt()?->format(\DateTimeInterface::ATOM),
+            'review_note' => $ticket->getReviewNote(),
+            'ticket_url' => $ticketUrl,
+        ];
+
+        try {
+            $response = $client->request('POST', $webhookUrl, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'X-Webhook-Secret' => (string) $this->getParameter('n8n_webhook_secret'),
+                ],
+                'json' => $payload,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode < 200 || $statusCode >= 300) {
+                $logger->error('N8N status update webhook returned non-success status.', [
+                    'status_code' => $statusCode,
+                    'signalement_id' => $ticket->getId(),
+                    'previous_status' => $previousStatus->value,
+                    'new_status' => $newStatus->value,
+                ]);
+            }
+        } catch (\Throwable $exception) {
+            $logger->error('N8N status update webhook call failed.', [
+                'exception' => $exception,
+                'signalement_id' => $ticket->getId(),
+                'previous_status' => $previousStatus->value,
+                'new_status' => $newStatus->value,
+            ]);
+        }
     }
 
     #[Route('/{id}/ai-review', name: 'app_moderation_ticket_ai_review_update', methods: ['POST'], requirements: ['id' => '[0-9a-fA-F\-]{36}'])]
