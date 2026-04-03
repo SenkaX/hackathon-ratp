@@ -351,7 +351,7 @@ final class TicketModerationController extends AbstractController
             'en_attente_validation' => ['label' => 'En attente de validation', 'color' => '#00c4b3'],
             'valide' => ['label' => 'Valide', 'color' => '#8b5cf6'],
             'en_cours' => ['label' => 'En cours', 'color' => '#ec4899'],
-            'sans_suite' => ['label' => 'Classe sans suite', 'color' => '#10b981'],
+            'sans_suite' => ['label' => 'Classe sans suite', 'color' => '#64748b'],
             'escalade_juridique' => ['label' => 'Juridique', 'color' => '#f59e0b'],
             'resolu' => ['label' => 'Resolu', 'color' => '#ef4444'],
         ];

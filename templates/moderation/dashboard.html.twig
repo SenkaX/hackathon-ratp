@@ -263,6 +263,16 @@
             margin-bottom: 14px;
         }
 
+        .db-kpi-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
         .db-kpi-value {
             font-size: 2rem;
             font-weight: 800;
@@ -532,6 +542,7 @@
             height: 100%;
             position: relative;
             overflow: visible;
+            cursor: pointer;
         }
 
         .bar {
@@ -542,6 +553,13 @@
             min-height: 14px;
             transform-origin: bottom;
             animation: growBar 0.7s ease-out both;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .bar-wrap.active .bar,
+        .bar-wrap:hover .bar {
+            transform: translateY(-4px);
+            filter: brightness(1.05);
         }
 
         .bar-label {
@@ -563,11 +581,49 @@
             min-height: 2.4em;
         }
 
+        .category-hover-line {
+            position: absolute;
+            top: 16px;
+            bottom: 86px;
+            width: 1px;
+            border-left: 1px dashed #94a3b8;
+            opacity: 0.8;
+            display: none;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .category-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 170px;
+            display: none;
+            z-index: 3;
+        }
+
+        .category-tooltip-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .category-tooltip-value {
+            font-size: 1rem;
+            color: #1e3a8a;
+        }
+
         .pie-wrap {
             display: grid;
             grid-template-columns: 320px 1fr;
             align-items: center;
             gap: 18px;
+            position: relative;
         }
 
         .pie {
@@ -579,6 +635,13 @@
             border: 8px solid #fff;
             box-shadow: 0 2px 8px rgba(2, 6, 23, 0.14);
             animation: pieReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both, pieFloat 5s ease-in-out 1s infinite;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .pie.active {
+            transform: scale(1.02);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
         }
 
         .legend {
@@ -592,6 +655,13 @@
             align-items: center;
             gap: 10px;
             color: #334155;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .legend-item.active {
+            color: #1f2937;
+            transform: translateX(3px);
+            font-weight: 700;
         }
 
         .dot {
@@ -599,6 +669,31 @@
             height: 11px;
             border-radius: 999px;
             flex-shrink: 0;
+        }
+
+        .pie-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+            padding: 10px 12px;
+            min-width: 190px;
+            display: none;
+            z-index: 3;
+        }
+
+        .pie-tooltip-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--azur);
+            margin-bottom: 6px;
+        }
+
+        .pie-tooltip-value {
+            font-size: 1rem;
+            color: #1e3a8a;
         }
 
         .db-grid-bottom {
@@ -912,7 +1007,38 @@
                     <section class="db-kpis">
                         {% for kpi in kpis %}
                             <article class="db-kpi">
-                                <div class="db-kpi-icon" style="background: {{ kpi.color }};">●</div>
+                                <div class="db-kpi-icon" style="background: {{ kpi.color }};">
+                                    {% if kpi.icon == 'pulse' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <polyline points="3 12 7 12 10 6 14 18 17 12 21 12"></polyline>
+                                        </svg>
+                                    {% elseif kpi.icon == 'clock' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v6l4 2"></path>
+                                        </svg>
+                                    {% elseif kpi.icon == 'trend' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <polyline points="4 14 9 9 13 13 20 6"></polyline>
+                                            <path d="M20 11V6h-5"></path>
+                                        </svg>
+                                    {% elseif kpi.icon == 'check' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <polyline points="8 12 11 15 16 9"></polyline>
+                                        </svg>
+                                    {% elseif kpi.icon == 'alert' %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 8v5"></path>
+                                            <circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none"></circle>
+                                        </svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"></circle>
+                                        </svg>
+                                    {% endif %}
+                                </div>
                                 <div class="db-kpi-value">{{ kpi.value }}</div>
                                 <div class="db-kpi-label">{{ kpi.label }}</div>
                             </article>
@@ -990,11 +1116,17 @@
                                 </div>
                                 <div class="bars">
                                     {% for item in categoryBars %}
-                                        <div class="bar-wrap">
+                                        <div class="bar-wrap" data-category-label="{{ item.label|e('html_attr') }}" data-category-value="{{ item.value }}">
                                             <div class="bar" style="height: {{ ((item.value / maxCategoryValue) * 100)|round(1) }}%;"></div>
                                             <span class="bar-label">{{ item.label }}</span>
                                         </div>
                                     {% endfor %}
+                                </div>
+
+                                <div id="category-hover-line" class="category-hover-line" aria-hidden="true"></div>
+                                <div id="category-tooltip" class="category-tooltip" aria-hidden="true">
+                                    <div id="category-tooltip-title" class="category-tooltip-title"></div>
+                                    <div id="category-tooltip-value" class="category-tooltip-value"></div>
                                 </div>
                             </div>
                         </article>
@@ -1002,14 +1134,19 @@
                         <article class="db-card">
                             <h2>Repartition par statut</h2>
                             <div class="pie-wrap">
-                                <div class="pie" style="background: {{ pieGradient }};"></div>
+                                <div id="status-pie" class="pie" style="background: {{ pieGradient }};" data-status-distribution="{{ statusDistribution|json_encode|e('html_attr') }}"></div>
                                 <div class="legend">
                                     {% for item in statusDistribution %}
-                                        <div class="legend-item">
+                                        <div class="legend-item" data-status-index="{{ loop.index0 }}">
                                             <span class="dot" style="background: {{ item.color }};"></span>
                                             <span>{{ item.label }}: {{ item.count }} tickets ({{ item.value }}%)</span>
                                         </div>
                                     {% endfor %}
+                                </div>
+
+                                <div id="pie-tooltip" class="pie-tooltip" aria-hidden="true">
+                                    <div id="pie-tooltip-title" class="pie-tooltip-title"></div>
+                                    <div id="pie-tooltip-value" class="pie-tooltip-value"></div>
                                 </div>
                             </div>
                         </article>
@@ -1151,6 +1288,187 @@
             });
 
             svg.addEventListener('mouseleave', hideHover);
+        })();
+
+        (function () {
+            const chart = document.querySelector('.category-chart');
+            const bars = chart ? Array.from(chart.querySelectorAll('.bar-wrap')) : [];
+            const hoverLine = document.getElementById('category-hover-line');
+            const tooltip = document.getElementById('category-tooltip');
+            const tooltipTitle = document.getElementById('category-tooltip-title');
+            const tooltipValue = document.getElementById('category-tooltip-value');
+
+            if (!chart || bars.length === 0 || !hoverLine || !tooltip || !tooltipTitle || !tooltipValue) {
+                return;
+            }
+
+            function clearActive() {
+                bars.forEach((bar) => bar.classList.remove('active'));
+            }
+
+            function hideCategoryHover() {
+                hoverLine.style.display = 'none';
+                tooltip.style.display = 'none';
+                clearActive();
+            }
+
+            function showCategoryHover(bar) {
+                clearActive();
+                bar.classList.add('active');
+
+                const chartRect = chart.getBoundingClientRect();
+                const barRect = bar.getBoundingClientRect();
+                const barCenterX = barRect.left - chartRect.left + (barRect.width / 2);
+                const barTopY = barRect.top - chartRect.top;
+
+                hoverLine.style.left = `${barCenterX}px`;
+                hoverLine.style.display = 'block';
+
+                const label = bar.getAttribute('data-category-label') || '';
+                const value = bar.getAttribute('data-category-value') || '0';
+                tooltipTitle.textContent = label;
+                tooltipValue.textContent = `value : ${value}`;
+                tooltip.style.display = 'block';
+
+                let tooltipLeft = barCenterX + 12;
+                let tooltipTop = barTopY - 10;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (tooltipLeft + tooltipRect.width > chartRect.width - 4) {
+                    tooltipLeft = barCenterX - tooltipRect.width - 12;
+                }
+                if (tooltipLeft < 4) {
+                    tooltipLeft = 4;
+                }
+                if (tooltipTop < 4) {
+                    tooltipTop = 4;
+                }
+
+                tooltip.style.left = `${tooltipLeft}px`;
+                tooltip.style.top = `${tooltipTop}px`;
+            }
+
+            bars.forEach((bar) => {
+                bar.addEventListener('mouseenter', function () {
+                    showCategoryHover(bar);
+                });
+
+                bar.addEventListener('mousemove', function () {
+                    showCategoryHover(bar);
+                });
+            });
+
+            chart.addEventListener('mouseleave', hideCategoryHover);
+        })();
+
+        (function () {
+            const pie = document.getElementById('status-pie');
+            const pieWrap = pie ? pie.closest('.pie-wrap') : null;
+            const tooltip = document.getElementById('pie-tooltip');
+            const tooltipTitle = document.getElementById('pie-tooltip-title');
+            const tooltipValue = document.getElementById('pie-tooltip-value');
+            const legendItems = pieWrap ? Array.from(pieWrap.querySelectorAll('.legend-item')) : [];
+
+            if (!pie || !pieWrap || !tooltip || !tooltipTitle || !tooltipValue) {
+                return;
+            }
+
+            let distribution = [];
+            try {
+                distribution = JSON.parse(pie.getAttribute('data-status-distribution') || '[]');
+            } catch (e) {
+                distribution = [];
+            }
+
+            if (!Array.isArray(distribution) || distribution.length === 0) {
+                return;
+            }
+
+            const segments = [];
+            let accumulated = 0;
+            distribution.forEach((item, index) => {
+                const start = accumulated;
+                accumulated += Number(item.value || 0);
+                const end = index === distribution.length - 1 ? 100 : accumulated;
+                segments.push({ start, end, item, index });
+            });
+
+            function clearLegendActive() {
+                legendItems.forEach((el) => el.classList.remove('active'));
+            }
+
+            function hidePieHover() {
+                tooltip.style.display = 'none';
+                pie.classList.remove('active');
+                tooltipTitle.style.color = '';
+                clearLegendActive();
+            }
+
+            function findSegmentByPercent(percent) {
+                for (const segment of segments) {
+                    if (percent >= segment.start && percent < segment.end) {
+                        return segment;
+                    }
+                }
+                return segments[segments.length - 1] || null;
+            }
+
+            function showPieHover(event) {
+                const rect = pie.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const dx = event.clientX - centerX;
+                const dy = event.clientY - centerY;
+                const distance = Math.sqrt((dx * dx) + (dy * dy));
+
+                if (distance > rect.width / 2) {
+                    hidePieHover();
+                    return;
+                }
+
+                const angle = (Math.atan2(dy, dx) * (180 / Math.PI) + 450) % 360;
+                const percent = (angle / 360) * 100;
+                const segment = findSegmentByPercent(percent);
+                if (!segment) {
+                    hidePieHover();
+                    return;
+                }
+
+                pie.classList.add('active');
+                clearLegendActive();
+                const activeLegend = pieWrap.querySelector(`.legend-item[data-status-index="${segment.index}"]`);
+                if (activeLegend) {
+                    activeLegend.classList.add('active');
+                }
+
+                tooltipTitle.textContent = segment.item.label || '';
+                tooltipTitle.style.color = segment.item.color || '';
+                tooltipValue.textContent = `${segment.item.count} tickets (${segment.item.value}%)`;
+                tooltip.style.display = 'block';
+
+                const wrapRect = pieWrap.getBoundingClientRect();
+                let left = event.clientX - wrapRect.left + 14;
+                let top = event.clientY - wrapRect.top - 22;
+
+                const tooltipRect = tooltip.getBoundingClientRect();
+                if (left + tooltipRect.width > wrapRect.width - 4) {
+                    left = event.clientX - wrapRect.left - tooltipRect.width - 14;
+                }
+                if (left < 4) {
+                    left = 4;
+                }
+                if (top < 4) {
+                    top = 4;
+                }
+
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+            }
+
+            pie.addEventListener('mouseenter', showPieHover);
+            pie.addEventListener('mousemove', showPieHover);
+            pie.addEventListener('mouseleave', hidePieHover);
+            pieWrap.addEventListener('mouseleave', hidePieHover);
         })();
     </script>
 {% endblock %}
