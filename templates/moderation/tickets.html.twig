@@ -709,6 +709,155 @@
             font-style: italic;
         }
 
+        .ai-decision {
+            margin-top: 6px;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            line-height: 1.35;
+        }
+
+        .ai-decision-badge {
+            display: inline-block;
+            margin-bottom: 4px;
+            border-radius: 999px;
+            padding: 2px 8px;
+            font-size: 0.64rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .ai-decision-badge.approved {
+            color: #166534;
+            background: #dcfce7;
+            border-color: #86efac;
+        }
+
+        .ai-decision-badge.rejected {
+            color: #991b1b;
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+        .btn-edit-ai {
+            width: 100%;
+            background: transparent;
+            color: var(--azur);
+            border: 1px solid #bfd5ef;
+            padding: 9px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .btn-edit-ai:hover {
+            border-color: var(--azur);
+            background: #f2f7ff;
+        }
+
+        .ticket-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            z-index: 70;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .ticket-modal[hidden] {
+            display: none;
+        }
+
+        .ticket-modal-card {
+            width: min(760px, 100%);
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: #fff;
+            border: 1px solid #d7e2ef;
+            border-radius: 12px;
+            box-shadow: 0 24px 60px rgba(2, 6, 23, 0.25);
+        }
+
+        .ticket-modal-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e3edf6;
+        }
+
+        .ticket-modal-head h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: #0f172a;
+        }
+
+        .ticket-modal-head p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .ticket-modal-body {
+            padding: 16px 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .ticket-modal-body label {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .ticket-modal-body textarea,
+        .ticket-modal-body select {
+            width: 100%;
+            border: 1px solid #c8d8eb;
+            border-radius: 8px;
+            padding: 10px;
+            font: inherit;
+            color: #334155;
+            background: #fff;
+        }
+
+        .ticket-modal-body textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .ticket-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 18px;
+            border-top: 1px solid #e3edf6;
+            background: #f8fbff;
+        }
+
+        .ticket-modal-actions .btn-cancel {
+            background: #fff;
+            border: 1px solid #d0deeb;
+            color: #475569;
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .ticket-modal-actions .btn-submit {
+            background: var(--azur);
+            color: #fff;
+            border: 1px solid var(--azur);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
         .ticket.dragging {
             opacity: 0.45;
             background: #f6fbfb;
@@ -901,7 +1050,7 @@
                                 <div class="column-empty">Aucun ticket</div>
                             {% else %}
                                 {% for ticket in laneTickets %}
-                                    <div class="ticket" draggable="true" data-ticket-id="{{ ticket.id }}" data-status="{{ ticket.status.value }}">
+                                    <div class="ticket" draggable="true" data-ticket-id="{{ ticket.id }}" data-status="{{ ticket.status.value }}" data-ticket-title="{{ ticket.motif.label()|e('html_attr') }}" data-ai-review-action="{{ path('app_moderation_ticket_ai_review_update', {id: ticket.id}) }}" data-ai-token="{{ csrf_token('ticket-ai-review-' ~ ticket.id) }}" data-ai-suggestion="{{ (ticket.suggestion ?? '')|e('html_attr') }}" data-ai-human-response="{{ (ticket.suggestionHumanResponse ?? '')|e('html_attr') }}" data-ai-decision="{% if ticket.suggestionValidated is same as(true) %}approved{% elseif ticket.suggestionValidated is same as(false) %}rejected{% else %}pending{% endif %}">
                                         <div class="ticket-header">
                                             <span class="ticket-id">{{ ticket.id }}</span>
                                             <span class="ticket-priority priority-{% if ticket.prioriteScore >= 75 %}critical{% elseif ticket.prioriteScore >= 50 %}high{% elseif ticket.prioriteScore >= 25 %}medium{% else %}low{% endif %}">
@@ -926,6 +1075,19 @@
                                             </div>
                                         {% endif %}
 
+                                        {% if ticket.suggestionValidated is not null or ticket.suggestionHumanResponse %}
+                                            <div class="ai-decision">
+                                                {% if ticket.suggestionValidated is same as(true) %}
+                                                    <span class="ai-decision-badge approved">Suggestion IA validée</span>
+                                                {% elseif ticket.suggestionValidated is same as(false) %}
+                                                    <span class="ai-decision-badge rejected">Suggestion IA rejetée</span>
+                                                {% endif %}
+                                                {% if ticket.suggestionHumanResponse %}
+                                                    <div>{{ ticket.suggestionHumanResponse|length > 140 ? ticket.suggestionHumanResponse|slice(0, 140) ~ '...' : ticket.suggestionHumanResponse }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+
                                         <form class="ticket-actions" method="post" action="{{ path('app_moderation_ticket_status_update', {id: ticket.id}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('ticket-status-' ~ ticket.id) }}">
                                             <input type="hidden" name="_redirect_route" value="{{ resetRoute|default('app_moderation_tickets') }}">
@@ -939,6 +1101,7 @@
                                             </select>
 
                                             <button type="submit" class="btn-save"> Enregistrer</button>
+                                            <button type="button" class="btn-edit-ai">Modifier suggestion IA</button>
                                             <a href="{{ path('app_ticket_show', {id: ticket.id, token: ticket.accessToken}) }}" class="btn-view">️ Voir</a>
                                         </form>
 
@@ -962,8 +1125,92 @@
         </div>
     </section>
 
+    <div id="ticket-ai-modal" class="ticket-modal" hidden>
+        <div class="ticket-modal-card" role="dialog" aria-modal="true" aria-labelledby="ticket-ai-modal-title">
+            <form id="ticket-ai-form" method="post" action="">
+                <div class="ticket-modal-head">
+                    <h2 id="ticket-ai-modal-title">Edition suggestion IA</h2>
+                    <p id="ticket-ai-modal-subtitle"></p>
+                </div>
+
+                <div class="ticket-modal-body">
+                    <input type="hidden" name="_token" id="ticket-ai-token" value="">
+                    <input type="hidden" name="_redirect_route" value="{{ resetRoute|default('app_moderation_tickets') }}">
+
+                    <div>
+                        <label for="ticket-ai-suggestion">Suggestion IA (editable)</label>
+                        <textarea id="ticket-ai-suggestion" name="suggestion" placeholder="Modifier la suggestion IA..."></textarea>
+                    </div>
+
+                    <div>
+                        <label for="ticket-ai-decision">Decision humaine par rapport a la suggestion IA</label>
+                        <select id="ticket-ai-decision" name="suggestion_decision">
+                            <option value="pending">Pas de decision</option>
+                            <option value="approved">Suggestion validee</option>
+                            <option value="rejected">Suggestion rejetee</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="ticket-ai-human-response">Reponse humaine</label>
+                        <textarea id="ticket-ai-human-response" name="human_response" placeholder="Expliquer pourquoi la suggestion IA est validee ou rejetee..."></textarea>
+                    </div>
+                </div>
+
+                <div class="ticket-modal-actions">
+                    <button type="button" class="btn-cancel" id="ticket-ai-cancel">Fermer</button>
+                    <button type="submit" class="btn-submit">Sauvegarder les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let draggedTicket = null;
+        const ticketAiModal = document.getElementById('ticket-ai-modal');
+        const ticketAiForm = document.getElementById('ticket-ai-form');
+        const ticketAiToken = document.getElementById('ticket-ai-token');
+        const ticketAiSuggestion = document.getElementById('ticket-ai-suggestion');
+        const ticketAiDecision = document.getElementById('ticket-ai-decision');
+        const ticketAiHumanResponse = document.getElementById('ticket-ai-human-response');
+        const ticketAiSubtitle = document.getElementById('ticket-ai-modal-subtitle');
+        const ticketAiCancel = document.getElementById('ticket-ai-cancel');
+
+        function openTicketAiModal(ticketEl) {
+            if (!ticketEl || !ticketAiModal || !ticketAiForm) {
+                return;
+            }
+
+            const ticketId = ticketEl.getAttribute('data-ticket-id') || '';
+            const ticketTitle = ticketEl.getAttribute('data-ticket-title') || 'Ticket';
+
+            ticketAiForm.action = ticketEl.getAttribute('data-ai-review-action') || '';
+            ticketAiToken.value = ticketEl.getAttribute('data-ai-token') || '';
+            ticketAiSuggestion.value = ticketEl.getAttribute('data-ai-suggestion') || '';
+            ticketAiDecision.value = ticketEl.getAttribute('data-ai-decision') || 'pending';
+            ticketAiHumanResponse.value = ticketEl.getAttribute('data-ai-human-response') || '';
+            ticketAiSubtitle.textContent = `${ticketId} - ${ticketTitle}`;
+
+            ticketAiModal.hidden = false;
+        }
+
+        function closeTicketAiModal() {
+            if (ticketAiModal) {
+                ticketAiModal.hidden = true;
+            }
+        }
+
+        if (ticketAiCancel) {
+            ticketAiCancel.addEventListener('click', closeTicketAiModal);
+        }
+
+        if (ticketAiModal) {
+            ticketAiModal.addEventListener('click', function(e) {
+                if (e.target === ticketAiModal) {
+                    closeTicketAiModal();
+                }
+            });
+        }
 
         // Function to update column counters
         function updateColumnCounters() {
@@ -1009,11 +1256,28 @@
                     col.classList.remove('drag-over');
                 });
             });
+
+            ticket.addEventListener('click', function(e) {
+                const interactiveTarget = e.target.closest('a, button, select, textarea, input, form, option');
+                if (interactiveTarget) {
+                    return;
+                }
+
+                openTicketAiModal(this);
+            });
         }
 
         // Initialize drag events for all existing tickets
         document.querySelectorAll('.ticket').forEach(ticket => {
             attachDragEvents(ticket);
+        });
+
+        document.querySelectorAll('.btn-edit-ai').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openTicketAiModal(this.closest('.ticket'));
+            });
         });
 
         // Setup drop zones

@@ -703,6 +703,51 @@ final class TicketModerationController extends AbstractController
         return $this->json(['success' => true, 'status' => $status->value]);
     }
 
+    #[Route('/{id}/ai-review', name: 'app_moderation_ticket_ai_review_update', methods: ['POST'], requirements: ['id' => '[0-9a-fA-F\-]{36}'])]
+    public function updateAiReview(
+        string $id,
+        Request $request,
+        SignalementRepository $signalementRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $ticket = $signalementRepository->find($id);
+
+        if ($ticket === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $token = (string) $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('ticket-ai-review-'.$ticket->getId(), $token)) {
+            throw $this->createAccessDeniedException('CSRF token invalid.');
+        }
+
+        $suggestion = trim((string) $request->request->get('suggestion', ''));
+        $humanResponse = trim((string) $request->request->get('human_response', ''));
+        $decision = (string) $request->request->get('suggestion_decision', 'pending');
+
+        $ticket->setSuggestion($suggestion !== '' ? $suggestion : null);
+        $ticket->setSuggestionHumanResponse($humanResponse !== '' ? $humanResponse : null);
+
+        $suggestionValidated = match ($decision) {
+            'approved' => true,
+            'rejected' => false,
+            default => null,
+        };
+        $ticket->setSuggestionValidated($suggestionValidated);
+
+        $ticket->setReviewedAt(new \DateTimeImmutable());
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $ticket->setReviewedBy($user);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Analyse IA et reponse humaine mises a jour.');
+
+        return $this->redirectToRoute($this->resolveRedirectRoute($request));
+    }
+
     private function computePriorityScore(int $gravite, int $confianceScore): int
     {
         $score = ($gravite * 15) + intdiv($confianceScore, 4);
