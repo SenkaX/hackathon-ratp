@@ -251,22 +251,24 @@
                         <div class="kv-value prelike">{{ signalement.details }}</div>
                     </div>
 
-                    <div class="kv-row">
-                        <div class="kv-key">Suggestion IA</div>
-                        <div class="kv-value">
-                            {% if signalement.suggestion %}
-                                <div class="ai-block">
-                                    <span class="ai-label">Suggestion IA</span>
-                                    {{ signalement.suggestion|nl2br }}
-                                </div>
-                            {% else %}
-                                <div class="ai-block">
-                                    <span class="ai-label">Suggestion IA</span>
-                                    Suggestion en cours de generation.
-                                </div>
-                            {% endif %}
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RH') or is_granted('ROLE_MANAGER') %}
+                        <div class="kv-row">
+                            <div class="kv-key">Suggestion IA</div>
+                            <div class="kv-value">
+                                {% if signalement.suggestion %}
+                                    <div class="ai-block">
+                                        <span class="ai-label">Suggestion IA</span>
+                                        {{ signalement.suggestion|nl2br }}
+                                    </div>
+                                {% else %}
+                                    <div class="ai-block">
+                                        <span class="ai-label">Suggestion IA</span>
+                                        Suggestion en cours de generation.
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </div>
             </section>
         </div>

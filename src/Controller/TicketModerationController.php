@@ -223,6 +223,15 @@ final class TicketModerationController extends AbstractController
             }
 
             if (count($recentTickets) < 5) {
+                $viewUrl = null;
+                $accessToken = $ticket->getAccessToken();
+                if ($accessToken !== null && $accessToken !== '') {
+                    $viewUrl = $this->generateUrl('app_ticket_show', [
+                        'id' => $ticket->getId(),
+                        'token' => $accessToken,
+                    ], UrlGeneratorInterface::ABSOLUTE_PATH);
+                }
+
                 $recentTickets[] = [
                     'id' => 'TICK-' . strtoupper(substr((string) $ticket->getId(), 0, 8)),
                     'priority' => $ticket->getPrioriteScore() >= 75 ? 'Critique' : ($ticket->getPrioriteScore() >= 50 ? 'Haute' : ($ticket->getPrioriteScore() >= 25 ? 'Moyenne' : 'Faible')),
@@ -235,6 +244,7 @@ final class TicketModerationController extends AbstractController
                     'date' => $ticket->getSubmittedAt()->format('d/m/Y H:i'),
                     'confidence' => $ticket->getConfianceScore(),
                     'assigned' => 'Assigné',
+                    'viewUrl' => $viewUrl,
                 ];
             }
         }
