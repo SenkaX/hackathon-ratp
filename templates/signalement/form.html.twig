@@ -117,7 +117,7 @@
             letter-spacing: 0.8px;
         }
 
-        .ratp-content input,
+        .ratp-content input:not([type="checkbox"]),
         .ratp-content select,
         .ratp-content textarea {
             background: #fff;
@@ -128,12 +128,33 @@
             font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         }
 
-        .ratp-content input:focus,
+        .ratp-content input:not([type="checkbox"]):focus,
         .ratp-content select:focus,
         .ratp-content textarea:focus {
             border-color: var(--jade);
             outline: 3px solid rgba(0, 196, 179, 0.12);
             box-shadow: none;
+        }
+
+        .ratp-content .consent-row {
+            margin-top: 4px;
+        }
+
+        .ratp-content .consent-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            vertical-align: middle;
+            accent-color: var(--jade);
+        }
+
+        .ratp-content .consent-row .consent-label {
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            display: inline;
         }
 
         .ratp-content ul {
@@ -192,6 +213,7 @@
                 {{ form_row(form.stop) }}
                 {{ form_row(form.incident_date) }}
                 {{ form_row(form.details) }}
+                {{ form_row(form.consent_rgpd) }}
 
                 <button type="submit" class="ratp-submit">Envoyer le signalement</button>
             {{ form_end(form) }}

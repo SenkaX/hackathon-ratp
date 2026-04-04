@@ -214,9 +214,9 @@ final class TicketModerationController extends AbstractController
                 ++$criticalTickets;
             }
 
-            $submittedAt = $ticket->getSubmittedAt();
-            if ($submittedAt >= $evolutionStart) {
-                $key = $submittedAt->format('Y-m-d');
+            $incidentDate = $ticket->getIncidentDate();
+            if ($incidentDate !== null && $incidentDate >= $evolutionStart) {
+                $key = $incidentDate->format('Y-m-d');
                 if (array_key_exists($key, $evolutionDailyCounts)) {
                     ++$evolutionDailyCounts[$key];
                 }

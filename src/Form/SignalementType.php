@@ -8,11 +8,13 @@ use App\Enum\SignalementMotif;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\IsTrue;
 
 class SignalementType extends AbstractType
 {
@@ -44,6 +46,20 @@ class SignalementType extends AbstractType
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
                 'label' => 'Date et heure de l\'incident',
+            ])
+            ->add('consent_rgpd', CheckboxType::class, [
+                'mapped' => false,
+                'required' => true,
+                'label' => 'J\'accepte les CGU et l\'utilisation de mes donnees pour le traitement de ce signalement (RGPD).',
+                'constraints' => [
+                    new IsTrue(message: 'Vous devez accepter les CGU et le traitement des donnees (RGPD).'),
+                ],
+                'row_attr' => [
+                    'class' => 'consent-row',
+                ],
+                'label_attr' => [
+                    'class' => 'consent-label',
+                ],
             ])
         ;
     }
